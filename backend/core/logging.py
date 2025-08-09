@@ -78,7 +78,7 @@ class LoggerSetup:
         """Configure logging levels for third-party libraries to reduce noise."""
         # Configure SQLAlchemy logging - can be controlled via environment
         import os
-        sql_log_level = os.getenv("SQLALCHEMY_LOG_LEVEL", "INFO").upper()
+        sql_log_level = os.getenv("SQLALCHEMY_LOG_LEVEL", "ERROR").upper()
         
         sqlalchemy_loggers = [
             "sqlalchemy",
@@ -90,7 +90,22 @@ class LoggerSetup:
         ]
         
         for logger_name in sqlalchemy_loggers:
-            logging.getLogger(logger_name).setLevel(getattr(logging, sql_log_level))
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(getattr(logging, sql_log_level))
+            # Do not propagate noisy SQL logs if we're silencing them
+            if sql_log_level in ["WARNING", "ERROR", "CRITICAL"]:
+                logger.propagate = False
+        
+        # Explicitly quiet Alembic migration logs
+        alembic_loggers = [
+            "alembic",
+            "alembic.runtime.migration",
+            "alembic.ddl",
+        ]
+        for logger_name in alembic_loggers:
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(logging.ERROR)
+            logger.propagate = False
         
         # Set other potentially noisy loggers
         logging.getLogger("urllib3").setLevel(logging.WARNING)

@@ -1,13 +1,5 @@
 """
 Dealer schemas for request/response validation.
-
-Designed to support:
-- POST /            -> DealerCreate
-- GET  /my-profile  -> DealerRead (internally; endpoint can return plain JSON)
-- PUT  /my-profile  -> DealerUpdate
-
-Note: You mentioned responses will be simple JSON, not Pydantic response models.
-These schemas are still useful for request validation and service layer typing.
 """
 from typing import Optional
 from uuid import UUID
