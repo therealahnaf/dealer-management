@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     
     # Database
-    DATABASE_URL: str = "postgresql://rfp_user:rfp_password@localhost:5432/dealer_mgt_db"
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/dealer_mgt_db"
     
     # JWT Settings
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"

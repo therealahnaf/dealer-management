@@ -37,7 +37,7 @@ class UserService:
                 email=user_data.email,
                 password_hash=hashed_password,
                 full_name=user_data.full_name,
-                role=user_data.role or UserRole.buyer,
+                role=user_data.role,
                 contact_number=user_data.contact_number,
             )
             db.add(db_user)
