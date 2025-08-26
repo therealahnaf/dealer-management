@@ -1,7 +1,17 @@
 # Models package
-from models.base import Base
-from models.user import User
-from models.dealer import Dealer
-from models.product import Product
+from .base import Base
+from .user import User
+from .dealer import Dealer
+from .product import Product
+from .purchase_order import PurchaseOrder
+from .purchase_order_item import PurchaseOrderItem
 
-__all__ = ["Base", "User", "Dealer", "Product"]
+
+__all__ = [
+    "Base",
+    "User",
+    "Dealer",
+    "Product",
+    "PurchaseOrder",
+    "PurchaseOrderItem",
+]

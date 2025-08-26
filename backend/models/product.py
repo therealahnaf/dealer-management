@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, Integer, Numeric, DateTime, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from .base import Base, TimestampMixin
+from sqlalchemy.orm import relationship
 import enum
 import uuid
 
@@ -24,6 +25,8 @@ class Product(Base, TimestampMixin):
     retailer_profit = Column(Numeric(10, 2), default=0.00)
     stock_qty = Column(Integer, default=0)
     status = Column(Enum(ProductStatus), default=ProductStatus.ACTIVE, nullable=False)
+
+    purchase_order_items = relationship("PurchaseOrderItem", back_populates="product")
 
     def __repr__(self):
         return f"<Product(id={self.product_id}, name='{self.name}', sku='{self.sku_code}')>"

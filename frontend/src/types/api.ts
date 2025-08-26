@@ -72,3 +72,23 @@ export enum UserStatus {
 export interface ApiError {
   detail: string;
 }
+
+export enum ProductStatus {
+  ACTIVE = "active",
+  DISCONTINUED = "discontinued",
+}
+
+export interface ProductRead {
+  product_id: string;
+  sku_code: string;
+  name: string;
+  pack_size?: string;
+  product_list_tag?: string;
+  mrp: number;
+  trade_price_incl_vat: number;
+  retailer_profit: number;
+  stock_qty: number;
+  status: ProductStatus;
+  created_at: string; // Assuming ISO date string
+  updated_at?: string; // Assuming ISO date string
+}

@@ -26,3 +26,4 @@ class User(Base, TimestampMixin):
     status = Column(SAEnum(UserStatus), default=UserStatus.active, nullable=False)
 
     dealers = relationship("Dealer", back_populates="user", cascade="all, delete-orphan")
+    purchase_orders = relationship("PurchaseOrder", back_populates="created_by")

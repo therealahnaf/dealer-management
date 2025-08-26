@@ -1,7 +1,7 @@
 """
 Dealers API endpoints.
 """
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from api.v1.deps import get_db, require_roles
@@ -29,7 +29,13 @@ def get_my_profile(
     db: Session = Depends(get_db),
 ):
     dealer_service = DealerService(db)
-    return dealer_service.get_dealer_profile(current_user)
+    dealer = dealer_service.get_dealer_profile(current_user)
+    if not dealer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dealer profile not found",
+        )
+    return dealer
 
 
 @router.put("/my-profile")

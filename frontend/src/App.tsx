@@ -11,6 +11,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 // Protected Pages
 import DashboardPage from './pages/DashboardPage';
 import DealerPage from './pages/DealerPage';
+import ProductsPage from './pages/ProductsPage';
 
 // Placeholder pages for future routes
 const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
@@ -48,6 +49,13 @@ function App() {
 
             {/* Placeholder routes for future implementation */}
             <Route path="/products" element={
+              <ProtectedRoute>
+                <ProductsPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Placeholder routes for future implementation */}
+            <Route path="/products-placeholder" element={
               <ProtectedRoute>
                 <PlaceholderPage title="Products" />
               </ProtectedRoute>

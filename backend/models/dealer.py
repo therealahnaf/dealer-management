@@ -19,5 +19,5 @@ class Dealer(Base, TimestampMixin):
     shipping_address = Column(Text)
 
     user = relationship("User", back_populates="dealers")
-    # purchase_orders = relationship("PurchaseOrder", back_populates="dealer")
+    purchase_orders = relationship("PurchaseOrder", back_populates="dealer")
     # invoices = relationship("Invoice", back_populates="dealer")
