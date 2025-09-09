@@ -6,6 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from core.config import settings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Create database engine
 engine = create_engine(
@@ -31,3 +34,20 @@ def get_db():
         yield db
     finally:
         db.close()
+
+"""
+Database client initialization using application settings.
+"""
+from supabase import create_client, Client
+
+from .config import settings
+
+
+def _create_supabase_client() -> Client:
+    if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+        raise RuntimeError("Supabase configuration missing: SUPABASE_URL and SUPABASE_KEY must be set")
+    return create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+
+# Shared Supabase client
+supabase: Client = _create_supabase_client()

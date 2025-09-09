@@ -11,21 +11,29 @@ import {
   TrendingUp, 
   Settings 
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
-const navigation = [
+const dealerNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Dealer Profile', href: '/dealer', icon: Building2 },
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Purchase Orders', href: '/purchase-orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Payments', href: '/payments', icon: CreditCard },
-  { name: 'Suppliers', href: '/suppliers', icon: Users },
   { name: 'Analytics', href: '/analytics', icon: TrendingUp },
-  { name: 'Settings', href: '/settings', icon: Settings },
+];
+
+const buyerNavigation = [
+  { name: 'Dealer Profile', href: '/dealer', icon: Building2 },
+  { name: 'Products', href: '/products', icon: Package },
+  { name: 'Purchase Orders', href: '/purchase-orders', icon: ShoppingCart },
+  { name: 'Invoices', href: '/invoices', icon: FileText },
 ];
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth();
+  if (!user) return null;
+  const navigation = user.role === 'admin' ? dealerNavigation : buyerNavigation;
 
   return (
     <div className="bg-white w-64 min-h-screen shadow-sm border-r border-gray-200">

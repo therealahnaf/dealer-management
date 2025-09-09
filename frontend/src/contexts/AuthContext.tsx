@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 interface JwtPayload {
   sub: string;
   email: string;
-  role: UserRole;
+  role: UserRole | string; // tolerate backend variance
   exp: number;
   iat: number;
 }
@@ -14,7 +14,7 @@ interface JwtPayload {
 interface AuthContextType {
   user: UserRead | null;
   token: string | null;
-  login: (credentials: UserLogin) => Promise<void>;
+  login: (credentials: UserLogin) => Promise<UserRead>;
   register: (userData: UserCreate) => Promise<void>;
   resetPassword: (resetData: PasswordReset) => Promise<void>;
   logout: () => void;
@@ -33,98 +33,98 @@ export const useAuth = () => {
   return context;
 };
 
+// Helpers
+const STORAGE_TOKEN_KEY = 'token';
+const STORAGE_USER_KEY = 'user';
+const isExpired = (exp?: number) => !exp || exp * 1000 < Date.now();
+const normalizeRole = (r: unknown): UserRole =>
+  String(r ?? '').toLowerCase() === 'buyer' ? ('buyer' as UserRole) : ('admin' as UserRole);
+
+// (Optional export) central place to decide landings per role
+export const homeForRole = (role?: string) => (String(role).toLowerCase() === 'buyer' ? '/products' : '/dashboard');
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserRead | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem(STORAGE_TOKEN_KEY));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthContext - Initial load, token exists:', !!token);
-    
     const initializeAuth = async () => {
       if (!token) {
-        console.log('AuthContext - No token found, setting user to null');
         setUser(null);
         setLoading(false);
         return;
       }
 
       try {
-        console.log('AuthContext - Setting auth header with token');
-        authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        // Decode the token to get user info
-        console.log('AuthContext - Decoding token...');
         const decoded = jwtDecode<JwtPayload>(token);
-        console.log('AuthContext - Decoded token:', decoded);
-        
-        if (!decoded.sub || !decoded.role) {
-          throw new Error('Invalid token: missing required fields');
+
+        if (isExpired(decoded.exp)) {
+          // stale token → clear everything
+          setToken(null);
+          setUser(null);
+          localStorage.removeItem(STORAGE_TOKEN_KEY);
+          localStorage.removeItem(STORAGE_USER_KEY);
+          delete authApi.defaults.headers.common['Authorization'];
+          setLoading(false);
+          return;
         }
-        
+
+        // Good token → set header + user
+        authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         const userData: UserRead = {
           user_id: decoded.sub,
           email: decoded.email || '',
-          role: decoded.role,
-          status: UserStatus.ACTIVE
+          role: normalizeRole(decoded.role),
+          status: UserStatus.ACTIVE,
         };
-        
-        console.log('AuthContext - Setting user from token:', userData);
+
         setUser(userData);
-        
-        // Ensure localStorage is in sync
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
+        localStorage.setItem(STORAGE_TOKEN_KEY, token);
+        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(userData));
       } catch (error) {
-        console.error('AuthContext - Error initializing auth:', error);
-        // Clear invalid token and user data
+        // invalid token → clear session
         setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem(STORAGE_TOKEN_KEY);
+        localStorage.removeItem(STORAGE_USER_KEY);
         delete authApi.defaults.headers.common['Authorization'];
       } finally {
         setLoading(false);
       }
     };
-    
+
     initializeAuth();
   }, [token]);
 
-  const login = async (credentials: UserLogin) => {
+  const login = async (credentials: UserLogin): Promise<UserRead> => {
     setLoading(true);
     try {
-      console.log('Attempting login with credentials:', { email: credentials.email });
-      
-      // Use the response to get the token
       const { data } = await authApi.post<Token>('/users/login', credentials);
       const { access_token } = data;
-      
-      console.log('Login successful, token received');
-      
-      // Decode the token to get user info
+
       const decoded = jwtDecode<JwtPayload>(access_token);
-      console.log('Decoded token payload:', decoded);
-      
+      if (isExpired(decoded.exp)) {
+        throw new Error('Received an expired token. Please try again.');
+      }
+
       const userData: UserRead = {
         user_id: decoded.sub,
-        email: decoded.email || credentials.email, // Fallback to credentials email if not in token
-        role: decoded.role,
-        status: UserStatus.ACTIVE
+        email: decoded.email || credentials.email,
+        role: normalizeRole(decoded.role),
+        status: UserStatus.ACTIVE,
       };
-      
-      console.log('Setting user data:', userData);
-      
+
       setToken(access_token);
       setUser(userData);
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem(STORAGE_TOKEN_KEY, access_token);
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(userData));
       authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      
-      console.log('Login flow completed, user state updated');
+
+      return userData; // <- let the caller redirect by role immediately if desired
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      throw new Error(error?.response?.data?.detail || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -133,12 +133,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: UserCreate) => {
     setLoading(true);
     try {
-      const response = await authApi.post<UserRead>('/users/register', userData);
-      
-      // After successful registration, automatically log in
+      await authApi.post<UserRead>('/users/register', userData);
+      // Auto-login after register
       await login({ email: userData.email, password: userData.password });
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Registration failed');
+      throw new Error(error?.response?.data?.detail || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -149,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await authApi.post('/users/reset-password', resetData);
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Password reset failed');
+      throw new Error(error?.response?.data?.detail || 'Password reset failed');
     } finally {
       setLoading(false);
     }
@@ -158,25 +157,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem(STORAGE_TOKEN_KEY);
+    localStorage.removeItem(STORAGE_USER_KEY);
     delete authApi.defaults.headers.common['Authorization'];
   };
 
   const hasRole = (role: UserRole): boolean => {
-    const userRole = user?.role;
-    const hasRole = userRole?.toLowerCase() === role.toLowerCase();
-    
-    console.log('Role check:', {
-      requiredRole: role,
-      userRole: userRole,
-      normalizedRequired: role.toLowerCase(),
-      normalizedUser: userRole?.toLowerCase(),
-      hasRole,
-      user: user
-    });
-    
-    return hasRole;
+    if (!user?.role) return false;
+    return String(user.role).toLowerCase() === String(role).toLowerCase();
   };
 
   const isAuthenticated = !!user;
@@ -195,7 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         hasRole,
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
