@@ -1,184 +1,85 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import { UserRole } from './types/api';
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { RequireAuth, AllowRoles, PublicOnly } from './components/RouteGuards';
+import { homeForRole } from './roles';
 
-// Auth Pages
+// Pages (adjust import paths/names if needed)
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
-// Protected Pages
-import DashboardPage from './pages/DashboardPage';
-import DealerPage from './pages/DealerPage';
 import ProductsPage from './pages/ProductsPage';
+import CartPage from './pages/CartPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderDetailPage from './pages/PurchaseOrderDetailPage';
-import CartPage from './pages/CartPage';
+import DealerPage from './pages/DealerPage';
+// import InvoicesPage from './pages/InvoicesPage';
 
-// Placeholder pages for future routes
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
-      <p className="text-gray-600">This page will be implemented in future updates.</p>
-    </div>
-  </div>
-);
+import DashboardPage from './pages/DashboardPage';
+import { useAuth } from './contexts/AuthContext';
+// ...any other admin pages
 
-// Component to handle home page redirection based on user role
-const HomeRedirector = () => {
-  const { isAuthenticated, hasRole, user, loading } = useAuth();
-  const location = useLocation();
-  
-  console.log('HomeRedirector - Initial State:', { 
-    loading,
-    isAuthenticated, 
-    user, 
-    hasBuyerRole: hasRole(UserRole.BUYER), 
-    hasAdminRole: hasRole(UserRole.ADMIN) 
-  });
-  
-  // Show loading state
-  if (loading) {
-    console.log('HomeRedirector - Loading state');
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    console.log('HomeRedirector - User not authenticated, redirecting to login');
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  
-  // Check for buyer role first
-  const isBuyer = hasRole(UserRole.BUYER);
-  console.log('HomeRedirector - Buyer check:', { isBuyer, userRole: user?.role });
-  
-  if (isBuyer) {
-    console.log('HomeRedirector - User is a buyer, redirecting to products');
-    return <Navigate to="/products" replace />;
-  }
-  
-  // Check for admin role
-  const isAdmin = hasRole(UserRole.ADMIN);
-  console.log('HomeRedirector - Admin check:', { isAdmin, userRole: user?.role });
-  
-  if (isAdmin) {
-    console.log('HomeRedirector - User is an admin, redirecting to dashboard');
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  // Fallback for users with no matching role
-  console.error('HomeRedirector - No matching role found for user:', {
-    user,
-    userRole: user?.role,
-    expectedRoles: [UserRole.BUYER, UserRole.ADMIN]
-  });
-  
-  return <Navigate to="/unauthorized" replace />;
-};
-
-function App() {
+export default function App() {
+  const { user, loading } = useAuth();
+  if (loading) return <Loader />;
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-        <div className="App">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/unauthorized" element={<PlaceholderPage title="Unauthorized" />} />
-            
-            {/* Buyer Routes */}
-            <Route path="/" element={<HomeRedirector />} />
-            
-            <Route path="/products" element={
-              <ProtectedRoute allowedRoles={[UserRole.BUYER, UserRole.ADMIN]}>
-                <ProductsPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/cart" element={
-              <ProtectedRoute allowedRoles={[UserRole.BUYER, UserRole.ADMIN]}>
-                <CartPage />
-              </ProtectedRoute>
-            } />
+    <BrowserRouter>
+      <Routes>
+        {/* ---------- PUBLIC (auth) ---------- */}
+        <Route element={<PublicOnly />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+        </Route>
 
-            <Route path="/purchase-orders" element={
-              <ProtectedRoute allowedRoles={[UserRole.BUYER, UserRole.ADMIN]}>
-                <PurchaseOrdersPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/purchase-orders/:id" element={
-              <ProtectedRoute allowedRoles={[UserRole.BUYER, UserRole.ADMIN]}>
-                <PurchaseOrderDetailPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dealer" element={
-              <ProtectedRoute allowedRoles={[UserRole.BUYER, UserRole.ADMIN]}>
-                <DealerPage />
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin-only Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
-                <DashboardPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/invoices" element={
-              <ProtectedRoute>
-                <PlaceholderPage title="Invoices" />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/payments" element={
-              <ProtectedRoute>
-                <PlaceholderPage title="Payments" />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/suppliers" element={
-              <ProtectedRoute>
-                <PlaceholderPage title="Suppliers" />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/analytics" element={
-              <ProtectedRoute>
-                <PlaceholderPage title="Analytics" />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <PlaceholderPage title="Settings" />
-              </ProtectedRoute>
-            } />
+        {/* ---------- AUTHENTICATED ONLY ---------- */}
+        <Route element={<RequireAuth />}>
+          {/* Buyer + Admin can see buyer surface listed below */}
+          <Route element={<AllowRoles roles={['buyer', 'admin']} />}>
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
+            <Route path="/dealer" element={<DealerPage />} />
+            {/* <Route path="/invoices" element={<InvoicesPage />} /> */}
+          </Route>
 
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </div>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+          {/* Admin-only: ALL other app pages go here */}
+          <Route element={<AllowRoles roles={['admin']} />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* Add every other route that should be admin-only */}
+            {/* <Route path="/admin/something" element={<Something />} /> */}
+          </Route>
+        </Route>
+
+        {/* ---------- DEFAULT LANDING / FALLBACK ---------- */}
+        {/* If you want '/' to auto-route based on role */}
+        <Route
+          path="/"
+          element={<Autoland />}
+        />
+
+        {/* Unknown route fallback */}
+        <Route path="*" element={<UnknownRouteFallback />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default App;
+function Loader() {
+  return <div style={{ padding: 24, textAlign: 'center' }}>Loading…</div>;
+}
+
+function Autoland() {
+  const { user, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={homeForRole(user.role)} replace />;
+}
+
+function UnknownRouteFallback() {
+  const { user, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (user) return <Navigate to={homeForRole(user.role)} replace />;
+  return <Navigate to="/login" replace />;
+}
