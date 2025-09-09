@@ -2,6 +2,7 @@
 Application configuration settings.
 """
 from pydantic_settings import BaseSettings
+import os
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,10 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/dealer_mgt_db"
+
+    # Supabase
+    SUPABASE_URL: str | None = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY: str | None = os.getenv("SUPABASE_KEY")
     
     # JWT Settings
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"
