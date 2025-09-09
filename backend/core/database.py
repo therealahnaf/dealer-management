@@ -6,6 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from core.config import settings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Create database engine
 engine = create_engine(
