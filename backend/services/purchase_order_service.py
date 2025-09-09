@@ -6,9 +6,11 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from ..models import PurchaseOrder, PurchaseOrderItem, Product, Dealer, User
-from ..schemas import PurchaseOrderCreate, PurchaseOrderUpdate
-from ..models.purchase_order import PurchaseOrderStatus
+from models.purchase_order import PurchaseOrder, PurchaseOrderStatus
+from models.purchase_order_item import PurchaseOrderItem
+from models.product import Product
+from models.dealer import Dealer
+from schemas.purchase_order import PurchaseOrderCreate, PurchaseOrderUpdate
 
 class PurchaseOrderService:
 
@@ -74,9 +76,16 @@ class PurchaseOrderService:
 
     @classmethod
     def get_purchase_order_details(cls, db: Session, po_id: int, user_id: uuid.UUID) -> Optional[PurchaseOrder]:
-        order = db.query(PurchaseOrder).options(joinedload(PurchaseOrder.items).joinedload(PurchaseOrderItem.product)).filter(PurchaseOrder.po_id == po_id).first()
-        if not order or order.created_by_user != user_id:
+        # Load order with related dealer and items (with product details)
+        # The relationships are set to lazy="joined" in the models
+        order = db.query(PurchaseOrder).filter(
+            PurchaseOrder.po_id == po_id,
+            PurchaseOrder.created_by_user == user_id
+        ).first()
+        
+        if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Purchase Order not found")
+                
         return order
 
     @classmethod

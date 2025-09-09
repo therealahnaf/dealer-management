@@ -1,9 +1,20 @@
 # backend/schemas/purchase_order.py
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
-from ..models.purchase_order import PurchaseOrderStatus
+from models.purchase_order import PurchaseOrderStatus
+from models.dealer import Dealer as DealerModel
+
+class ProductBase(BaseModel):
+    product_id: uuid.UUID
+    name: str
+    pack_size: str
+    trade_price_incl_vat: float
+    mrp: float
+
+    class Config:
+        orm_mode = True
 
 class PurchaseOrderItemBase(BaseModel):
     product_id: uuid.UUID
@@ -18,6 +29,7 @@ class PurchaseOrderItem(PurchaseOrderItemBase):
     po_id: int
     pack_size_snapshot: str
     total_price: float
+    product: ProductBase
 
     class Config:
         orm_mode = True
@@ -33,10 +45,23 @@ class PurchaseOrderUpdate(BaseModel):
     external_ref_code: Optional[str] = None
     items: List[PurchaseOrderItemCreate]
 
+class DealerBase(BaseModel):
+    dealer_id: uuid.UUID
+    company_name: str
+    contact_person: str
+    contact_number: str
+    email: Optional[str] = None
+    billing_address: str
+    shipping_address: str
+
+    class Config:
+        orm_mode = True
+
 class PurchaseOrder(PurchaseOrderBase):
     po_id: int
     po_number: str
     dealer_id: uuid.UUID
+    dealer: DealerBase
     created_by_user: uuid.UUID
     po_date: datetime
     status: PurchaseOrderStatus
@@ -51,3 +76,16 @@ class PurchaseOrder(PurchaseOrderBase):
 
     class Config:
         orm_mode = True
+        
+        @classmethod
+        def from_orm(cls, obj):
+            # Ensure dealer is properly loaded
+            if hasattr(obj, 'dealer') and obj.dealer is None:
+                from sqlalchemy.orm import Session
+                from core.database import SessionLocal
+                db = SessionLocal()
+                try:
+                    obj.dealer = db.query(DealerModel).filter(DealerModel.dealer_id == obj.dealer_id).first()
+                finally:
+                    db.close()
+            return super().from_orm(obj)

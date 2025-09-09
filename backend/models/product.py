@@ -26,7 +26,11 @@ class Product(Base, TimestampMixin):
     stock_qty = Column(Integer, default=0)
     status = Column(Enum(ProductStatus), default=ProductStatus.ACTIVE, nullable=False)
 
-    purchase_order_items = relationship("PurchaseOrderItem", back_populates="product")
+    purchase_order_items = relationship(
+        "PurchaseOrderItem", 
+        back_populates="product",
+        lazy="select"  # Use select loading for the reverse relationship
+    )
 
     def __repr__(self):
         return f"<Product(id={self.product_id}, name='{self.name}', sku='{self.sku_code}')>"

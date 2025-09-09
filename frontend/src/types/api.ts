@@ -59,6 +59,15 @@ export interface DealerBase {
   shipping_address?: string;
 }
 
+export interface Dealer {
+  dealer_id: string;
+  name: string;
+  address: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+}
+
 export enum UserRole {
   BUYER = 'buyer',
   ADMIN = 'admin'

@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserRead, Token, UserLogin, UserCreate, PasswordReset } from '../types/api';
+import { UserRead, Token, UserLogin, UserCreate, PasswordReset, UserRole, UserStatus } from '../types/api';
 import { authApi } from '../services/api';
+import { jwtDecode } from 'jwt-decode';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: UserRole;
+  exp: number;
+  iat: number;
+}
 
 interface AuthContextType {
   user: UserRead | null;
@@ -11,6 +20,7 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
+  hasRole: (role: UserRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,42 +39,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      // Set default authorization header
-      authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      // Try to get user info - in a real app you'd have a /me endpoint
-      // For now, we'll decode the token or store user info in localStorage
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    console.log('AuthContext - Initial load, token exists:', !!token);
+    
+    const initializeAuth = async () => {
+      if (!token) {
+        console.log('AuthContext - No token found, setting user to null');
+        setUser(null);
+        setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        console.log('AuthContext - Setting auth header with token');
+        authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Decode the token to get user info
+        console.log('AuthContext - Decoding token...');
+        const decoded = jwtDecode<JwtPayload>(token);
+        console.log('AuthContext - Decoded token:', decoded);
+        
+        if (!decoded.sub || !decoded.role) {
+          throw new Error('Invalid token: missing required fields');
+        }
+        
+        const userData: UserRead = {
+          user_id: decoded.sub,
+          email: decoded.email || '',
+          role: decoded.role,
+          status: UserStatus.ACTIVE
+        };
+        
+        console.log('AuthContext - Setting user from token:', userData);
+        setUser(userData);
+        
+        // Ensure localStorage is in sync
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+      } catch (error) {
+        console.error('AuthContext - Error initializing auth:', error);
+        // Clear invalid token and user data
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        delete authApi.defaults.headers.common['Authorization'];
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeAuth();
   }, [token]);
 
   const login = async (credentials: UserLogin) => {
     setLoading(true);
     try {
-      const response = await authApi.post<Token>('/users/login', credentials);
-      const { access_token } = response.data;
+      console.log('Attempting login with credentials:', { email: credentials.email });
       
-      setToken(access_token);
-      localStorage.setItem('token', access_token);
-      authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      // Use the response to get the token
+      const { data } = await authApi.post<Token>('/users/login', credentials);
+      const { access_token } = data;
       
-      // In a real app, you'd fetch user info here
-      // For now, we'll create a mock user object
-      const mockUser: UserRead = {
-        user_id: '1',
-        email: credentials.email,
-        full_name: 'User', // This would come from the actual API
-        role: undefined,
-        status: undefined
+      console.log('Login successful, token received');
+      
+      // Decode the token to get user info
+      const decoded = jwtDecode<JwtPayload>(access_token);
+      console.log('Decoded token payload:', decoded);
+      
+      const userData: UserRead = {
+        user_id: decoded.sub,
+        email: decoded.email || credentials.email, // Fallback to credentials email if not in token
+        role: decoded.role,
+        status: UserStatus.ACTIVE
       };
       
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      console.log('Setting user data:', userData);
+      
+      setToken(access_token);
+      setUser(userData);
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
+      console.log('Login flow completed, user state updated');
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Login failed');
     } finally {
@@ -105,18 +163,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     delete authApi.defaults.headers.common['Authorization'];
   };
 
-  const isAuthenticated = !!token && !!user;
-
-  const value = {
-    user,
-    token,
-    login,
-    register,
-    resetPassword,
-    logout,
-    loading,
-    isAuthenticated,
+  const hasRole = (role: UserRole): boolean => {
+    const userRole = user?.role;
+    const hasRole = userRole?.toLowerCase() === role.toLowerCase();
+    
+    console.log('Role check:', {
+      requiredRole: role,
+      userRole: userRole,
+      normalizedRequired: role.toLowerCase(),
+      normalizedUser: userRole?.toLowerCase(),
+      hasRole,
+      user: user
+    });
+    
+    return hasRole;
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const isAuthenticated = !!user;
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        register,
+        resetPassword,
+        logout,
+        loading,
+        isAuthenticated,
+        hasRole,
+      }}
+    >
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };

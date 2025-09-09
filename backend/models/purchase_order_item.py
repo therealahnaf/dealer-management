@@ -16,4 +16,8 @@ class PurchaseOrderItem(Base):
     total_price = Column(Numeric(10, 2), nullable=False)
 
     purchase_order = relationship("PurchaseOrder", back_populates="items")
-    product = relationship("Product", back_populates="purchase_order_items")
+    product = relationship(
+        "Product", 
+        back_populates="purchase_order_items",
+        lazy="joined"  # Always load the product with the order item
+    )

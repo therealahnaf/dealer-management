@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 
 class DealerBase(BaseModel):
+    dealer_id: Optional[UUID] = None
     customer_code: Optional[str] = Field(default=None, max_length=50)
     company_name: Optional[str] = Field(default=None, max_length=255)
     contact_person: Optional[str] = Field(default=None, max_length=255)

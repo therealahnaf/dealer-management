@@ -16,7 +16,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Dealer Profile', href: '/dealer', icon: Building2 },
   { name: 'Products', href: '/products', icon: Package },
-  { name: 'Purchase Orders', href: '/orders', icon: ShoppingCart },
+  { name: 'Purchase Orders', href: '/purchase-orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Suppliers', href: '/suppliers', icon: Users },
@@ -32,7 +32,7 @@ const Sidebar: React.FC = () => {
       <nav className="mt-8 px-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = location.pathname.startsWith(item.href);
             return (
               <li key={item.name}>
                 <Link

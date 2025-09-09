@@ -4,14 +4,17 @@ import api from '../services/api';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
 import useDebounce from '../hooks/useDebounce';
+import { useCart } from '../contexts/CartContext';
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<ProductRead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const { addToCart } = useCart();
 
   const fetchProducts = useCallback(async (search: string) => {
     setLoading(true);
@@ -32,6 +35,24 @@ const ProductsPage: React.FC = () => {
   useEffect(() => {
     fetchProducts(debouncedSearchTerm);
   }, [debouncedSearchTerm, fetchProducts]);
+
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    setQuantities(prev => ({ ...prev, [productId]: quantity }));
+  };
+
+  const handleAddToCart = (product: ProductRead) => {
+    const quantity = quantities[product.product_id] || 1;
+    if (quantity > 0) {
+      addToCart({
+        product_id: product.product_id,
+        name: product.name,
+        quantity: quantity,
+        unit_price: product.mrp,
+      });
+      // Optionally reset quantity after adding
+      setQuantities(prev => ({ ...prev, [product.product_id]: 1 }));
+    }
+  };
 
   return (
     <Layout>
@@ -63,12 +84,27 @@ const ProductsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.length > 0 ? (
               products.map((product) => (
-                <div key={product.product_id} className="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                <div key={product.product_id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
                   <div className="p-6">
                     <h2 className="text-l font-semibold text-gray-800 break-words" title={product.name}>{product.name}</h2>
                     <p className="text-sm text-gray-600 mt-2">{product.pack_size}</p>
-                    <div className="mt-4 flex justify-between items-center">
-                      <p className="text-lg font-bold text-blue-600">{product.mrp.toFixed(2)} tk</p>
+                    <p className="text-lg font-bold text-blue-600 mt-2">{product.mrp.toFixed(2)} tk</p>
+                  </div>
+                  <div className="p-6 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        value={quantities[product.product_id] || 1}
+                        onChange={(e) => handleQuantityChange(product.product_id, parseInt(e.target.value, 10))}
+                        className="w-20 px-2 py-1 border border-gray-300 rounded-lg"
+                      />
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="flex-1 bg-blue-600 text-white px-4 py-1 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Add to Cart
+                      </button>
                     </div>
                   </div>
                 </div>

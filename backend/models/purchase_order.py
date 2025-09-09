@@ -30,7 +30,16 @@ class PurchaseOrder(Base, TimestampMixin):
     approved_at = Column(DateTime)
     combined_po_id = Column(Integer, ForeignKey("purchase_orders.po_id"), nullable=True)
 
-    dealer = relationship("Dealer", back_populates="purchase_orders")
+    dealer = relationship(
+        "Dealer", 
+        back_populates="purchase_orders",
+        lazy="joined"  # Always load the dealer with the order
+    )
     created_by = relationship("User", back_populates="purchase_orders")
-    items = relationship("PurchaseOrderItem", back_populates="purchase_order", cascade="all, delete-orphan")
+    items = relationship(
+        "PurchaseOrderItem", 
+        back_populates="purchase_order", 
+        cascade="all, delete-orphan",
+        lazy="joined"  # Always load items with the order
+    )
     combined_po = relationship("PurchaseOrder", remote_side=[po_id])
