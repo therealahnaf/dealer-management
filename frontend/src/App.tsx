@@ -16,11 +16,13 @@ import DealerPage from './pages/DealerPage';
 // import InvoicesPage from './pages/InvoicesPage';
 
 import DashboardPage from './pages/DashboardPage';
+import AdminPurchaseOrdersPage from './pages/AdminPurchaseOrdersPage';
+import AdminPurchaseOrderDetailPage from './pages/AdminPurchaseOrderDetailPage';
 import { useAuth } from './contexts/AuthContext';
 // ...any other admin pages
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   if (loading) return <Loader />;
   return (
     <BrowserRouter>
@@ -47,6 +49,8 @@ export default function App() {
           {/* Admin-only: ALL other app pages go here */}
           <Route element={<AllowRoles roles={['admin']} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/admin/purchase-orders" element={<AdminPurchaseOrdersPage />} />
+            <Route path="/admin/purchase-orders/:dealerId/:poId" element={<AdminPurchaseOrderDetailPage />} />
             {/* Add every other route that should be admin-only */}
             {/* <Route path="/admin/something" element={<Something />} /> */}
           </Route>

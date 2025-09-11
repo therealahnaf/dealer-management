@@ -136,9 +136,28 @@ class PurchaseOrderServiceSB:
         return [_with_required_fields(o) for o in orders]
 
     @staticmethod
-    def get_purchase_order_details(po_id: int, user_id: str):
-        po = supabase.table("purchase_orders").select("*") \
-             .eq("po_id", po_id).eq("created_by_user", str(user_id)).execute()
+    def approve_purchase_order(dealer_id: int, po_id: int):
+        supabase.table("purchase_orders").update({"status": "approved", "approved_at": datetime.now(timezone.utc).isoformat()}).eq("po_id", po_id).eq("dealer_id", str(dealer_id)).execute()
+        return PurchaseOrderServiceSB.get_purchase_order_details(po_id, "", dealer_id)
+
+    @staticmethod
+    def get_all_purchase_orders():
+        res = supabase.table("purchase_orders") \
+            .select("*") \
+            .order("po_id", desc=True) \
+            .execute()
+        orders = res.data or []
+        # IMPORTANT: enrich each order to match your response_model
+        return [_with_required_fields(o) for o in orders]
+
+    @staticmethod
+    def get_purchase_order_details(po_id: int, user_id: str, dealer_id: str = None):
+        if dealer_id:
+            po = supabase.table("purchase_orders").select("*") \
+             .eq("po_id", po_id).eq("dealer_id", str(dealer_id)).execute()
+        else:
+            po = supabase.table("purchase_orders").select("*") \
+                .eq("po_id", po_id).eq("created_by_user", str(user_id)).execute()
         if not po.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Purchase Order not found")
         return _with_required_fields(po.data[0])

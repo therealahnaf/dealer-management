@@ -10,7 +10,8 @@ from schemas.purchase_order import (
 from services.purchase_order_service_supabase import (
     PurchaseOrderServiceSB as PurchaseOrderService,
 )
-from api.v1.deps import get_current_user
+from api.v1.deps import get_current_user, require_roles
+from models.user import UserRole
 
 router = APIRouter()
 
@@ -79,3 +80,39 @@ def submit_purchase_order(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return PurchaseOrderService.submit_purchase_order(po_id, current_user["user_id"])
 
+@router.get("/", response_model=List[PurchaseOrderSchema], tags=["Purchase Orders"])
+def get_all_purchase_orders(
+    current_user = Depends(require_roles(UserRole.admin))
+):
+    """
+    Get all purchase orders (admin only)
+    """
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    return PurchaseOrderService.get_all_purchase_orders()
+
+@router.get("/{dealer_id}/{po_id}", response_model=PurchaseOrderSchema, tags=["Purchase Orders"])
+def get_purchase_order_details_by_dealer_and_po_id(
+    dealer_id: str,
+    po_id: int,
+    current_user = Depends(require_roles(UserRole.admin))
+):
+    """
+    Get purchase order details by dealer and po_id (admin only)
+    """
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    return PurchaseOrderService.get_purchase_order_details(po_id, "", dealer_id)
+    
+@router.put("/{dealer_id}/{po_id}/approve", response_model=PurchaseOrderSchema, tags=["Purchase Orders"])
+def approve_purchase_order(
+    dealer_id: str,
+    po_id: int,
+    current_user = Depends(require_roles(UserRole.admin))
+):
+    """
+    Approve purchase order (admin only)
+    """
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    return PurchaseOrderService.approve_purchase_order(dealer_id, po_id)

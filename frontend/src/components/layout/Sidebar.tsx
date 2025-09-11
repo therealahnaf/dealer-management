@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-const dealerNavigation = [
+const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Products', href: '/products', icon: Package },
-  { name: 'Purchase Orders', href: '/purchase-orders', icon: ShoppingCart },
+  { name: 'All Purchase Orders', href: '/admin/purchase-orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Analytics', href: '/analytics', icon: TrendingUp },
@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   if (!user) return null;
-  const navigation = user.role === 'admin' ? dealerNavigation : buyerNavigation;
+  const navigation = user.role === 'admin' ? adminNavigation : buyerNavigation;
 
   return (
     <div className="bg-white w-64 min-h-screen shadow-sm border-r border-gray-200">
