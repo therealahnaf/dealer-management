@@ -36,7 +36,7 @@ const Sidebar: React.FC = () => {
   const navigation = user.role === 'admin' ? dealerNavigation : buyerNavigation;
 
   return (
-    <div className="bg-white w-64 min-h-screen shadow-sm border-r border-gray-200">
+    <div className="bg-white/80 backdrop-blur-md w-64 min-h-screen shadow-soft border-r border-gray-200/50">
       <nav className="mt-8 px-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
@@ -45,18 +45,21 @@ const Sidebar: React.FC = () => {
               <li key={item.name}>
                 <Link
                   to={item.href}
-                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-md border border-blue-100'
+                      : 'text-gray-700 hover:bg-gray-50/80 hover:text-gray-900'
                   }`}
                 >
                   <item.icon
                     className={`mr-3 h-5 w-5 transition-colors ${
-                      isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                      isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
                     }`}
                   />
                   {item.name}
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                  )}
                 </Link>
               </li>
             );
