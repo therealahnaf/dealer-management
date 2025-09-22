@@ -34,14 +34,47 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-          <LogIn className="w-8 h-8 text-white" />
+    <div className="flex min-h-screen">
+      {/* Left Side - ASK International Branding */}
+      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-50 w-1/2 flex items-center justify-center">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-        <p className="text-gray-600 mt-2">Sign in to your dealer account</p>
+        
+        {/* Subtle animated orbs */}
+        
+        <div className="text-center relative z-10">
+          <h1 className="text-9xl font-black text-black mb-6 tracking-tight" style={{fontFamily: "'Playfair Display', serif"}}>ASK</h1>
+          <h2 className="text-3xl font-bold text-black mb-6">INTERNATIONAL</h2>
+          <div className="w-32 h-1 bg-gradient-to-r from-blue-400 to-indigo-400 mx-auto mb-8 rounded-full"></div>
+          <p className="text-lg font-medium text-slate-400 uppercase tracking-wider">Dealer Management Platform</p>
+        </div>
       </div>
+
+      {/* Right Side - Login Form */}
+      <div className="ml-96 min-h-screen flex items-center justify-center p-8 relative overflow-hidde">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.15) 1px, transparent 0)`,
+            backgroundSize: '20px 20px'
+          }}></div>
+        </div>
+        
+        <div className="w-full max-w-md">
+          <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-2xl shadow-2xl shadow-black/10 p-8 relative">
+            {/* Subtle inner glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent rounded-2xl pointer-events-none"></div>
+
+            <div className="relative z-10">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/25">
+                  <LogIn className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Welcome Back</h1>
+                <p className="text-gray-600 mt-3 text-lg">Sign in to your dealer account</p>
+              </div>
 
       {error && (
         <Alert type="error" className="mb-6">
@@ -50,8 +83,9 @@ const LoginForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="relative">
-          <Mail className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
+        <div className="relative group">
+          {/* Icon positioned relative to the input field, accounting for the label */}
+          <Mail className="absolute left-3 top-[38px] h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200 z-10" />
           <Input
             type="email"
             name="email"
@@ -59,13 +93,14 @@ const LoginForm: React.FC = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="pl-10"
+            className="pl-12 bg-white/50 border-white/30 focus:bg-white focus:border-blue-400 transition-all duration-200"
             placeholder="Enter your email"
           />
         </div>
 
-        <div className="relative">
-          <Lock className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
+        <div className="relative group">
+          {/* Icon positioned relative to the input field, accounting for the label */}
+          <Lock className="absolute left-3 top-[38px] h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200 z-10" />
           <Input
             type="password"
             name="password"
@@ -73,7 +108,7 @@ const LoginForm: React.FC = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="pl-10"
+            className="pl-12 bg-white/50 border-white/30 focus:bg-white focus:border-blue-400 transition-all duration-200"
             placeholder="Enter your password"
           />
         </div>
@@ -84,7 +119,7 @@ const LoginForm: React.FC = () => {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/30 rounded bg-white/50 focus:bg-white transition-all duration-200"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
               Remember me
@@ -93,29 +128,33 @@ const LoginForm: React.FC = () => {
 
           <Link
             to="/reset-password"
-            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+            className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
           >
             Forgot your password?
           </Link>
         </div>
 
-        <Button
-          type="submit"
-          loading={loading}
-          className="w-full"
-          size="lg"
-        >
-          Sign In
-        </Button>
-      </form>
+              <Button
+                type="submit"
+                loading={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all duration-200 transform hover:scale-[1.02]"
+                size="lg"
+              >
+                Sign In
+              </Button>
+            </form>
 
-      <div className="mt-8 text-center">
-        <p className="text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-500 font-medium">
-            Sign up here
-          </Link>
-        </p>
+            <div className="mt-8 text-center">
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200">
+                  Sign up here
+                </Link>
+              </p>
+            </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
