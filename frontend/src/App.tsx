@@ -12,8 +12,8 @@ import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderDetailPage from './pages/PurchaseOrderDetailPage';
+import InvoicesPage from './pages/InvoicesPage';
 import DealerPage from './pages/DealerPage';
-// import InvoicesPage from './pages/InvoicesPage';
 
 import DashboardPage from './pages/DashboardPage';
 import AdminPurchaseOrdersPage from './pages/AdminPurchaseOrdersPage';
@@ -42,8 +42,8 @@ export default function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
+            <Route path="/invoices" element={<InvoicesPage />} />
             <Route path="/dealer" element={<DealerPage />} />
-            {/* <Route path="/invoices" element={<InvoicesPage />} /> */}
           </Route>
 
           {/* Admin-only: ALL other app pages go here */}

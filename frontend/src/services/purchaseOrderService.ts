@@ -31,3 +31,8 @@ export const approvePurchaseOrder = async (dealer_id: string, po_id: number): Pr
     const response = await purchaseOrderApi.put(`/purchase-orders/${dealer_id}/${po_id}/approve`);
     return response.data;
 };
+
+export const getApprovedPurchaseOrders = async (): Promise<PurchaseOrder[]> => {
+  const response = await purchaseOrderApi.get('/purchase-orders/my-orders/approved');
+  return response.data;
+};

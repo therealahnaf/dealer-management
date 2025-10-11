@@ -1,30 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Plus, ShoppingCart, Eye, Calendar, Hash, Receipt } from 'lucide-react';
-import { getMyPurchaseOrders } from '../services/purchaseOrderService';
+import {
+  FileText,
+  Download,
+  Plus,
+  ShoppingCart,
+  Eye,
+  Calendar,
+  Hash,
+  Receipt,
+  DollarSign
+} from 'lucide-react';
+import { getApprovedPurchaseOrders } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
 
-const PurchaseOrdersPage: React.FC = () => {
+const InvoicesPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchApprovedOrders = async () => {
       try {
-        const data = await getMyPurchaseOrders();
+        const data = await getApprovedPurchaseOrders();
         setOrders(data);
       } catch (err) {
-        setError('Failed to fetch purchase orders');
+        setError('Failed to fetch approved purchase orders');
       }
       setLoading(false);
     };
 
-    fetchOrders();
+    fetchApprovedOrders();
   }, []);
 
+  const handleDownloadInvoice = async (orderId: number, poNumber: string) => {
+    setDownloadingInvoice(prev => ({ ...prev, [orderId]: true }));
+    try {
+      // Simulate invoice download - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Create a dummy PDF download
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVGl0bGUgKEludm9pY2UpCj4+CmVuZG9iagp4cmVmCjAgMQowMDAwMDAwMDAwIDY1NTM1IGYgCnRyYWlsZXIKPDwKL1NpemUgMQovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMTMwCiUlRU9G');
+      element.setAttribute('download', `invoice-${poNumber}.pdf`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    } finally {
+      setDownloadingInvoice(prev => ({ ...prev, [orderId]: false }));
+    }
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   return (
     <Layout>
@@ -34,10 +74,10 @@ const PurchaseOrdersPage: React.FC = () => {
             <div className="text-center py-20">
               <div className="relative mx-auto w-20 h-20 mb-6">
                 <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-teal-600 border-t-transparent animate-spin"></div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Purchase Orders...</h3>
-              <p className="text-gray-500">Please wait while we fetch your order history</p>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Invoices...</h3>
+              <p className="text-gray-500">Please wait while we fetch your approved orders</p>
             </div>
           ) : error ? (
             <div className="max-w-2xl mx-auto">
@@ -54,12 +94,12 @@ const PurchaseOrdersPage: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <FileText className="w-6 h-6" />
-                        <h1 className="text-3xl font-bold">My Purchase Orders</h1>
+                        <h1 className="text-3xl font-bold">Invoices</h1>
                       </div>
                       <div className="flex flex-wrap gap-4 text-gray-100">
                         <div className="flex items-center gap-2">
                           <Receipt className="w-4 h-4" />
-                          <span>{orders.length} {orders.length === 1 ? 'order' : 'orders'}</span>
+                          <span>{orders.length} {orders.length === 1 ? 'approved order' : 'approved orders'}</span>
                         </div>
                       </div>
                     </div>
@@ -82,7 +122,7 @@ const PurchaseOrdersPage: React.FC = () => {
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3">
                     <ShoppingCart className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Order History</h2>
+                    <h2 className="text-lg font-bold text-gray-800">Approved Orders</h2>
                   </div>
                 </div>
 
@@ -102,7 +142,6 @@ const PurchaseOrdersPage: React.FC = () => {
                             Date
                           </div>
                         </th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
                         <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
                         <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
@@ -125,41 +164,39 @@ const PurchaseOrdersPage: React.FC = () => {
                           </td>
                           <td className="py-4 px-6">
                             <span className="text-sm text-gray-900 font-medium">
-                              {new Date(order.po_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                              order.status === 'draft'
-                                ? 'bg-amber-100 text-amber-800'
-                                : order.status === 'submitted'
-                                ? 'bg-blue-100 text-blue-800'
-                                : order.status === 'approved'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : order.status === 'invoiced'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              {formatDate(order.po_date)}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-right">
-                            <span className="text-lg font-bold text-gray-600">
-                              {order.total_inc_vat.toFixed(2)} tk
-                            </span>
+                            <div className="flex items-center justify-end gap-2">
+                              <DollarSign className="w-4 h-4 text-gray-400" />
+                              <span className="text-lg font-bold text-gray-600">
+                                {order.total_inc_vat.toFixed(2)} tk
+                              </span>
+                            </div>
                           </td>
                           <td className="py-4 px-6 text-center">
-                            <Link
-                              to={`/purchase-orders/${order.po_id}`}
-                              className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors text-sm font-semibold"
-                            >
-                              <Eye className="w-4 h-4" />
-                              View Details
-                            </Link>
+                            <div className="flex items-center gap-2 justify-center">
+                              <Link
+                                to={`/purchase-orders/${order.po_id}`}
+                                className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors text-sm font-semibold"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View Order
+                              </Link>
+                              <button
+                                onClick={() => handleDownloadInvoice(order.po_id, order.po_number)}
+                                disabled={downloadingInvoice[order.po_id]}
+                                className="inline-flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-600 px-4 py-2 rounded-lg transition-colors text-sm font-semibold disabled:opacity-50"
+                              >
+                                {downloadingInvoice[order.po_id] ? (
+                                  <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Download className="w-4 h-4" />
+                                )}
+                                {downloadingInvoice[order.po_id] ? 'Downloading...' : 'Download'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -171,7 +208,7 @@ const PurchaseOrdersPage: React.FC = () => {
               {/* Footer */}
               <div className="mt-8 text-center">
                 <div className="text-sm text-gray-500">
-                  Showing {orders.length} purchase {orders.length === 1 ? 'order' : 'orders'}
+                  Showing {orders.length} approved purchase {orders.length === 1 ? 'order' : 'orders'}
                 </div>
               </div>
             </div>
@@ -181,14 +218,14 @@ const PurchaseOrdersPage: React.FC = () => {
                 <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
                   <FileText className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Purchase Orders Yet</h3>
-                <p className="text-gray-500 mb-6">Start by creating your first purchase order to see your order history here.</p>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Approved Orders Yet</h3>
+                <p className="text-gray-500 mb-6">You don't have any approved purchase orders to generate invoices for.</p>
                 <Link
-                  to="/cart"
+                  to="/purchase-orders"
                   className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors font-semibold"
                 >
-                  <Plus className="w-4 h-4" />
-                  Create Your First Order
+                  <ShoppingCart className="w-4 h-4" />
+                  View All Orders
                 </Link>
               </div>
             </div>
@@ -199,4 +236,4 @@ const PurchaseOrdersPage: React.FC = () => {
   );
 };
 
-export default PurchaseOrdersPage;
+export default InvoicesPage;

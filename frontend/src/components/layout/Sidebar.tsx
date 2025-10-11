@@ -9,7 +9,6 @@ import {
   CreditCard, 
   Users, 
   TrendingUp, 
-  Settings 
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -36,7 +35,8 @@ const Sidebar: React.FC = () => {
   const navigation = user.role === 'admin' ? adminNavigation : buyerNavigation;
 
   return (
-    <div className="bg-white w-64 min-h-screen shadow-sm border-r border-gray-200">
+    <div className="bg-gradient-to-b from-gray-50 to-white w-64 min-h-screen shadow-lg border-r border-gray-200/50 backdrop-blur-sm relative">
+
       <nav className="mt-8 px-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
@@ -47,13 +47,13 @@ const Sidebar: React.FC = () => {
                   to={item.href}
                   className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-md'
+                      : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >
                   <item.icon
                     className={`mr-3 h-5 w-5 transition-colors ${
-                      isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                      isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-600'
                     }`}
                   />
                   {item.name}
@@ -63,6 +63,19 @@ const Sidebar: React.FC = () => {
           })}
         </ul>
       </nav>
+
+      {/* User Profile Section */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/30">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center">
+            <Users className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-800 truncate">{user.full_name || user.email}</p>
+            <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ShoppingCart, Package, Receipt, ArrowLeft, Trash2, AlertCircle } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { createPurchaseOrder } from '../services/purchaseOrderService';
 import { getMyDealerProfile } from '../services/dealerService';
@@ -48,7 +49,7 @@ const CartPage: React.FC = () => {
       return;
     }
     if (cartItems.length === 0) {
-      setError('Your cart is empty.');
+      setError('Your cart is empty. Please add some items before submitting your order.');
       return;
     }
 
@@ -72,68 +73,219 @@ const CartPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Your Cart</h1>
-        {error && <Alert type="error" className="mb-6">{error}</Alert>}
-        {itemCount > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4">Order Items ({itemCount})</h2>
-              <div className="space-y-4">
-                {cartItems.map(item => (
-                  <div key={item.product_id} className="flex items-center justify-between border-b pb-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-4 py-8">
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="relative mx-auto w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Processing Order...</h3>
+              <p className="text-gray-500">Please wait while we submit your order</p>
+            </div>
+          ) : error ? (
+            <div className="max-w-2xl mx-auto">
+              <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
+                {error}
+              </Alert>
+            </div>
+          ) : itemCount > 0 ? (
+            <div className="max-w-6xl mx-auto">
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <ShoppingCart className="w-6 h-6" />
+                        <h1 className="text-3xl font-bold">Your Cart</h1>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-gray-100">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4" />
+                          <span>{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{(item.unit_price * item.quantity).toFixed(2)} tk</p>
-                      <button onClick={() => removeFromCart(item.product_id)} className="text-red-500 text-sm hover:underline">Remove</button>
+
+                    <div className="flex items-center gap-4">
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Link
+                          to="/products"
+                          className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl backdrop-blur-sm transition-all duration-300"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                          Continue Shopping
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md h-fit">
-              <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{totalAmount.toFixed(2)} tk</span>
-                </div>
-                {/* Add VAT/tax calculation if needed */}
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total</span>
-                  <span>{totalAmount.toFixed(2)} tk</span>
                 </div>
               </div>
-              <div className="space-y-4">
-                {profileError ? (
-                  <div className="text-center p-4 border border-red-200 bg-red-50 rounded-lg">
-                    <p className="text-red-700">No dealer profile found.</p>
-                    <Link to="/dealer" className="text-blue-600 hover:underline">
-                      Create a dealer profile to continue.
-                    </Link>
+
+              {/* Main Content */}
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Left Column - Order Summary */}
+                <div className="xl:col-span-1 space-y-6">
+                  {/* Order Summary */}
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <Receipt className="w-5 h-5 text-gray-600" />
+                        <h2 className="text-lg font-bold text-gray-800">Order Summary</h2>
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-gray-600">Subtotal:</span>
+                          <span className="font-semibold">{totalAmount.toFixed(2)} tk</span>
+                        </div>
+
+                        <div className="border-t border-gray-200 pt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xl font-bold text-gray-900">Total:</span>
+                            <span className="text-2xl font-bold text-gray-600">{totalAmount.toFixed(2)} tk</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 space-y-4">
+                        {profileError ? (
+                          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                            <div className="flex items-center gap-3 mb-3">
+                              <AlertCircle className="w-5 h-5 text-red-600" />
+                              <h3 className="font-semibold text-red-800">Profile Required</h3>
+                            </div>
+                            <p className="text-red-700 text-sm mb-3">No dealer profile found.</p>
+                            <Link
+                              to="/dealer"
+                              className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
+                            >
+                              Create Dealer Profile
+                            </Link>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleSubmitOrder}
+                            disabled={loading || !dealerId}
+                            className="w-full bg-gray-600 text-white py-3 rounded-xl hover:bg-gray-700 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                          >
+                            {loading ? 'Submitting Order...' : 'Submit Order'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <button 
-                      onClick={handleSubmitOrder} 
-                      disabled={loading || !dealerId}
-                      className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300"
-                    >
-                      {loading ? 'Submitting...' : 'Submit Order'}
-                    </button>
-                  </>
-                )}
+                </div>
+
+                {/* Right Column - Cart Items */}
+                <div className="xl:col-span-2">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Package className="w-5 h-5 text-gray-600" />
+                          <h2 className="text-lg font-bold text-gray-800">Cart Items</h2>
+                        </div>
+                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-semibold">
+                          {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Product</th>
+                            <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Quantity</th>
+                            <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Unit Price</th>
+                            <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
+                            <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {cartItems.map((item) => (
+                            <tr key={item.product_id} className="hover:bg-gray-50 transition-colors">
+                              <td className="py-4 px-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Package className="w-5 h-5 text-gray-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-gray-900 leading-tight">
+                                      {item.name}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6 text-center">
+                                <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
+                                  {item.quantity}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <span className="font-semibold text-gray-900">{item.unit_price.toFixed(2)} tk</span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <span className="text-lg font-bold text-gray-600">{(item.unit_price * item.quantity).toFixed(2)} tk</span>
+                              </td>
+                              <td className="py-4 px-6 text-center">
+                                <button
+                                  onClick={() => removeFromCart(item.product_id)}
+                                  className="inline-flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-lg transition-colors text-sm font-semibold"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <Link
+                  to="/products"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Products
+                </Link>
+
+                <div className="text-sm text-gray-500">
+                  Ready to place your order
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-10 bg-white p-6 rounded-lg shadow-md">
-            <p className="text-gray-600">Your cart is empty.</p>
-          </div>
-        )}
+          ) : (
+            <div className="max-w-2xl mx-auto text-center py-20">
+              <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-100">
+                <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <ShoppingCart className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Your Cart is Empty</h3>
+                <p className="text-gray-500 mb-6">Add some products to your cart to get started.</p>
+                <Link
+                  to="/products"
+                  className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors font-semibold"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Browse Products
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

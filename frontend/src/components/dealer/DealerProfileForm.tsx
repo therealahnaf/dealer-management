@@ -83,18 +83,31 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
   };
 
   return (
-    <Card>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {mode === 'create' ? 'Create Dealer Profile' : 'Edit Dealer Profile'}
-        </h2>
-        <p className="text-gray-600">
-          {mode === 'create' 
-            ? 'Set up your dealer profile to start placing orders'
-            : 'Update your dealer profile information'
-          }
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Building2 className="w-6 h-6" />
+                  <h1 className="text-3xl font-bold">{mode === 'create' ? 'Create Dealer Profile' : 'Edit Dealer Profile'}</h1>
+                </div>
+                <div className="flex flex-wrap gap-4 text-gray-100">
+                  <div className="flex items-center gap-2">
+                    <span>{mode === 'create' 
+                      ? 'Set up your dealer profile to start placing orders'
+                      : 'Update your dealer profile information'
+                    }</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Card>
 
       {error && (
         <Alert type="error" className="mb-6">
@@ -112,7 +125,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         {/* Company Information */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Building2 className="h-5 w-5 mr-2 text-blue-600" />
+            <Building2 className="h-5 w-5 mr-2 text-gray-600" />
             Company Information
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -141,7 +154,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         {/* Contact Information */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-blue-600" />
+            <User className="h-5 w-5 mr-2 text-gray-600" />
             Contact Information
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,7 +184,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         {/* Address Information */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-blue-600" />
+            <MapPin className="h-5 w-5 mr-2 text-gray-600" />
             Address Information
           </h3>
           <div className="space-y-6">
@@ -184,7 +197,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
                 value={formData.billing_address}
                 onChange={handleChange}
                 rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
                 placeholder="Enter billing address"
               />
             </div>
@@ -209,7 +222,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
                 value={formData.shipping_address}
                 onChange={handleChange}
                 rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
                 placeholder="Enter shipping address"
               />
             </div>
@@ -233,6 +246,8 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         </div>
       </form>
     </Card>
+      </div>
+    </div>
   );
 };
 

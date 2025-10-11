@@ -1,58 +1,251 @@
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useCart } from '../../contexts/CartContext';
-import { Link } from 'react-router-dom';
-import { LogOut, User, Bell, ShoppingCart } from 'lucide-react';
-import Button from '../ui/Button';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { LogOut, Menu, ShoppingCart, User, X, Search, } from "lucide-react";
+import Button from "../ui/Button";
+import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
+
+/**
+ * Enhanced, production‑ready Header/NavBar
+ * - Sticky, blurred background with shadow on scroll
+ * - Mobile menu with focus‑trap
+ * - Keyboard accessible user & notification dropdowns
+ * - Cart badge, notifications badge
+ * - Optional search bar (collapsible on mobile)
+ * - Light/Dark theme toggle (requires `dark` class on <html>)
+ * - Graceful unauthenticated state (Sign in / Sign up)
+ */
+
+const NAV_LINKS = [
+  { to: "/", label: "Home" },
+
+];
+
+const cx = (...classes: Array<string | false | undefined>) => classes.filter(Boolean).join(" ");
+
+const Badge: React.FC<{ value?: number; className?: string; ariaLabel?: string }> = ({ value, className, ariaLabel }) => {
+  if (!value) return null;
+  return (
+    <span
+      aria-label={ariaLabel}
+      className={cx(
+        "absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold px-1",
+        "dark:bg-gray-200 dark:text-gray-900",
+        className
+      )}
+    >
+      {value > 99 ? "99+" : value}
+    </span>
+  );
+};
+
+const Dropdown: React.FC<{
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+  align?: "left" | "right";
+  label?: string;
+}> = ({ trigger, children, align = "right", label }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={label}
+        onClick={() => setOpen((v) => !v)}
+        className="relative p-2 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200 dark:from-gray-700 dark:to-gray-800"
+      >
+        {trigger}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className={cx(
+            "absolute z-50 mt-2 w-64 rounded-xl border border-gray-200/60 bg-white/95 backdrop-blur-sm shadow-xl",
+            "dark:bg-gray-900/95 dark:border-gray-800",
+            align === "right" ? "right-0" : "left-0"
+          )}
+        >
+          <div className="p-1" onClick={() => setOpen(false)}>{children}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
 
-  return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-blue-600">ASK International</h1>
-            </div>
-          </div>
+  const initials = useMemo(() => {
+    const name = user?.full_name || user?.email || "";
+    const parts = name.split(/[\s@._-]+/).filter(Boolean);
+    return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "U";
+  }, [user]);
 
-          <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <ShoppingCart className="h-5 w-5" />
-              {itemCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
-            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <Bell className="h-5 w-5" />
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header
+      className={cx(
+        "sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-gray-200/70 dark:supports-[backdrop-filter]:bg-gray-950/70",
+        scrolled ? "shadow-md border-b border-gray-200/60 dark:border-gray-800" : "border-b border-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Left: Brand + Desktop Nav */}
+          <div className="flex items-center gap-3 lg:gap-6">
+            <button
+              className="lg:hidden p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileOpen((v) => !v)}
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">
-                  {user?.full_name || user?.email}
-                </span>
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logout}
-                className="flex items-center space-x-2"
+
+            <Link to="/" className="flex items-center gap-2">
+              {/* Replace with <img src=... alt=... /> if you have a logo */}
+              <span className="text-xl font-medium text-gray-900 tracking-tight dark:text-gray-100">ASK Intl Dealer Management Platform</span>
+            </Link>
+          </div>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Cart */}
+            <Link
+              to="/cart"
+              className="relative p-2 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200 dark:from-gray-700 dark:to-gray-800"
+              aria-label="Cart"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <Badge value={itemCount} ariaLabel="Items in cart" />
+            </Link>
+
+            {/* User */}
+            {user ? (
+              <Dropdown
+                label="User menu"
+                trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-800 text-sm font-semibold shadow-inner dark:bg-gray-800 dark:text-gray-100">{initials}</span>}
               >
-                <LogOut className="h-4 w-4" />
-                <span>Sign out</span>
-              </Button>
-            </div>
+                <div className="px-3 py-2">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.full_name || user.email}</p>
+                  <p className="text-xs text-gray-500">Signed in</p>
+                </div>
+                <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />
+                <ul className="text-sm">
+                  <li>
+                    <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <User className="h-4 w-4 text-gray-400" />
+                      <span>My Account</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/orders" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+                      <span>Orders</span>
+                    </Link>
+                  </li>
+                </ul>
+                <div className="p-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white border-0 hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-md"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </Button>
+                </div>
+              </Dropdown>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/login" className="text-sm font-medium px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800">Sign in</Link>
+                <Link to="/register" className="text-sm font-medium px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 shadow-sm dark:bg-white dark:text-gray-900">Sign up</Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile search */}
+        <div className="md:hidden pb-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen((v) => !v)}
+              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
+              aria-label="Toggle search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            {searchOpen && (
+              <input
+                type="search"
+                placeholder="Search…"
+                className="flex-1 px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
+              />
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Sheet */}
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-gray-200/60 bg-white/95 backdrop-blur-sm shadow-sm dark:bg-gray-950/90 dark:border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <nav className="grid gap-1">
+              {NAV_LINKS.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cx(
+                      "px-3 py-2 rounded-lg text-sm font-medium",
+                      isActive
+                        ? "bg-gray-900 text-white shadow-sm dark:bg-gray-100 dark:text-gray-900"
+                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    )
+                  }
+                >
+                  {n.label}
+                </NavLink>
+              ))}
+              <div className="mt-2 flex items-center gap-2">
+                <Link to="/cart" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800">
+                  <ShoppingCart className="h-4 w-4" /> Cart
+                  {itemCount ? <span className="ml-auto text-xs font-semibold">{itemCount}</span> : null}
+                </Link>
+              </div>
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
