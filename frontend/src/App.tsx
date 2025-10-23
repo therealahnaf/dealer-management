@@ -5,7 +5,6 @@ import { homeForRole } from './roles';
 
 // Pages (adjust import paths/names if needed)
 import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 import ProductsPage from './pages/ProductsPage';
@@ -18,6 +17,7 @@ import DealerPage from './pages/DealerPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPurchaseOrdersPage from './pages/AdminPurchaseOrdersPage';
 import AdminPurchaseOrderDetailPage from './pages/AdminPurchaseOrderDetailPage';
+import AdminDealersPage from './pages/AdminDealersPage';
 import { useAuth } from './contexts/AuthContext';
 // ...any other admin pages
 
@@ -30,7 +30,6 @@ export default function App() {
         {/* ---------- PUBLIC (auth) ---------- */}
         <Route element={<PublicOnly />}>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
@@ -51,8 +50,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin/purchase-orders" element={<AdminPurchaseOrdersPage />} />
             <Route path="/admin/purchase-orders/:dealerId/:poId" element={<AdminPurchaseOrderDetailPage />} />
-            {/* Add every other route that should be admin-only */}
-            {/* <Route path="/admin/something" element={<Something />} /> */}
+            <Route path="/admin/dealers" element={<AdminDealersPage />} />
           </Route>
         </Route>
 

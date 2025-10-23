@@ -67,41 +67,35 @@ const ProductsPage: React.FC = () => {
     });
 
   const ProductCard = ({ product }: { product: ProductRead }) => (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 relative">
+    <div className="group bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden transition-all duration-300 border border-gray-100">
       {/* Product Image Placeholder */}
-      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 flex items-center justify-center overflow-hidden">
-        <Package className="w-16 h-16 text-gray-600 group-hover:scale-110 transition-transform duration-300" />
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-600">
+      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-32 flex items-center justify-center overflow-hidden">
+        <Package className="w-12 h-12 text-gray-600 group-hover:scale-110 transition-transform duration-300" />
+        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-600">
           In Stock
         </div>
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
       </div>
 
-      <div className="p-6 pb-20">
+      <div className="p-4">
         {/* Product Info */}
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-gray-600 transition-colors" title={product.name}>
-            {product.name}
-          </h3>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-              {product.pack_size}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
-          </div>
+        <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2 group-hover:text-gray-600 transition-colors" title={product.name}>
+          {product.name}
+        </h3>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+            {product.pack_size}
+          </span>
         </div>
-      </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-lg font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
+        </div>
 
-      {/* Add to Cart Section - Fixed at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+        {/* Add to Cart Section */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
             <button
               onClick={() => handleQuantityChange(product.product_id, Math.max(1, (quantities[product.product_id] || 1) - 1))}
-              className="px-3 py-2 hover:bg-gray-200 transition-colors text-gray-600 font-semibold"
+              className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
             >
               −
             </button>
@@ -110,20 +104,20 @@ const ProductsPage: React.FC = () => {
               min="1"
               value={quantities[product.product_id] || 1}
               onChange={(e) => handleQuantityChange(product.product_id, Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-14 py-2 text-center border-0 bg-transparent font-semibold text-gray-800 focus:outline-none"
+              className="w-10 py-1 text-center border-0 bg-transparent font-semibold text-gray-800 focus:outline-none text-sm"
             />
             <button
               onClick={() => handleQuantityChange(product.product_id, (quantities[product.product_id] || 1) + 1)}
-              className="px-3 py-2 hover:bg-gray-200 transition-colors text-gray-600 font-semibold"
+              className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
             >
               +
             </button>
           </div>
           <button
             onClick={() => handleAddToCart(product)}
-            className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-3 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 flex items-center justify-center gap-2 font-semibold shadow-lg hover:shadow-xl transform active:scale-95"
+            className="flex-1 bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-1 font-semibold text-sm"
           >
-            <ShoppingCart className="w-4 h-4" /> +
+            <ShoppingCart className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -208,49 +202,49 @@ const ProductsPage: React.FC = () => {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-            <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-gray-100">
+            <div className="flex flex-col sm:flex-row gap-3 items-center">
               {/* Search Bar */}
-              <div className="relative flex-1 w-full lg:max-w-md">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search products, SKU, or categories..."
+                  placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-300 bg-gray-50 focus:bg-white text-sm"
                 />
               </div>
 
               {/* Controls */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {/* Sort */}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'name' | 'price')}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
                 >
-                  <option value="name">Sort by Name</option>
-                  <option value="price">Sort by Price</option>
+                  <option value="name">Name</option>
+                  <option value="price">Price</option>
                 </select>
 
                 {/* View Mode Toggle */}
-                <div className="flex bg-gray-100 rounded-xl p-1">
+                <div className="flex bg-gray-100 rounded-lg p-0.5">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded transition-colors ${
                       viewMode === 'grid' ? 'bg-white text-gray-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    <Grid className="w-5 h-5" />
+                    <Grid className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded transition-colors ${
                       viewMode === 'list' ? 'bg-white text-gray-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    <List className="w-5 h-5" />
+                    <List className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -275,16 +269,16 @@ const ProductsPage: React.FC = () => {
           ) : (
             <>
               {/* Results Header */}
-              <div className="flex justify-between items-center mb-6">
-                <p className="text-gray-600">
-                  Showing <span className="font-semibold text-gray-800">{processedProducts.length}</span> products
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-800">{processedProducts.length}</span> products
                 </p>
               </div>
 
               {/* Products Grid/List */}
               {processedProducts.length > 0 ? (
                 viewMode === 'grid' ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {processedProducts.map((product) => (
                       <ProductCard key={product.product_id} product={product} />
                     ))}

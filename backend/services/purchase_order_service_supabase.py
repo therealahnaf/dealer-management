@@ -47,8 +47,8 @@ VAT_PERCENT = Decimal("15.00")
 
 class PurchaseOrderServiceSB:
     @staticmethod
-    def _format_po_number(po_id: int) -> str:
-        return f"PO-{po_id:06d}"
+    def _format_po_number(dealer_id: str, sequence_num: int) -> str:
+        return f"PO-{dealer_id}-{sequence_num:06d}"
 
     @staticmethod
     def create_purchase_order(order_in, user_id: str):
@@ -77,8 +77,26 @@ class PurchaseOrderServiceSB:
         po = po_res.data[0]
         po_id = po["po_id"]
 
-        # 3) Generate final po_number and update
-        final_po_number = PurchaseOrderServiceSB._format_po_number(po_id)
+        # 3) Generate final po_number (dealer-specific sequence) and update
+        # Get the maximum sequence number for this dealer
+        existing_pos = supabase.table("purchase_orders").select("po_number") \
+            .eq("dealer_id", str(order_in.dealer_id)) \
+            .order("po_id", desc=True) \
+            .limit(1) \
+            .execute()
+        
+        sequence_num = 1
+        if existing_pos.data and existing_pos.data[0].get("po_number"):
+            # Extract sequence number from existing PO number (format: PO-{dealer_id}-{sequence})
+            try:
+                po_num_str = existing_pos.data[0]["po_number"]
+                parts = po_num_str.split("-")
+                if len(parts) >= 3:
+                    sequence_num = int(parts[-1]) + 1
+            except (ValueError, IndexError):
+                sequence_num = 1
+        
+        final_po_number = PurchaseOrderServiceSB._format_po_number(str(order_in.dealer_id), sequence_num)
         supabase.table("purchase_orders").update({"po_number": final_po_number}).eq("po_id", po_id).execute()
 
         # 4) Insert items and compute totals
@@ -129,6 +147,17 @@ class PurchaseOrderServiceSB:
         res = supabase.table("purchase_orders") \
             .select("*") \
             .eq("created_by_user", str(user_id)) \
+            .order("po_id", desc=True) \
+            .execute()
+        orders = res.data or []
+        # IMPORTANT: enrich each order to match your response_model
+        return [_with_required_fields(o) for o in orders]
+
+    def get_my_approved_orders(user_id: str):
+        res = supabase.table("purchase_orders") \
+            .select("*") \
+            .eq("created_by_user", str(user_id)) \
+            .eq("status", "approved") \
             .order("po_id", desc=True) \
             .execute()
         orders = res.data or []

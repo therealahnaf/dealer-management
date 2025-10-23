@@ -14,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const adminNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Dealers', href: '/admin/dealers', icon: Users },
   { name: 'Products', href: '/products', icon: Package },
   { name: 'All Purchase Orders', href: '/admin/purchase-orders', icon: ShoppingCart },
   { name: 'Invoices', href: '/invoices', icon: FileText },

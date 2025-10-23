@@ -25,8 +25,12 @@ export function AllowRoles({ roles }: AllowRolesProps) {
   const { user } = useAuth(); // expects { user?: { role?: 'admin' | 'buyer' } }
   const role = user?.role as UserRole | undefined;
 
-  if (!role || !roles.includes(role)) {
-    // Logged in but not allowed here → send to that role’s home
+  // Normalize role comparison to lowercase
+  const normalizedRole = role ? String(role).toLowerCase() : undefined;
+  const normalizedAllowedRoles = roles.map(r => String(r).toLowerCase());
+
+  if (!normalizedRole || !normalizedAllowedRoles.includes(normalizedRole)) {
+    // Logged in but not allowed here → send to that role's home
     return <Navigate to={homeForRole(role)} replace />;
   }
 
