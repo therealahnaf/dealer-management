@@ -28,8 +28,8 @@ const Input: React.FC<InputProps> = ({
         className={`
           block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200
           ${error 
-            ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-            : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+            : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'
           }
           disabled:bg-gray-50 disabled:cursor-not-allowed
           ${className}
@@ -37,7 +37,10 @@ const Input: React.FC<InputProps> = ({
         {...props}
       />
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-600 flex items-center">
+          <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
+          {error}
+        </p>
       )}
       {helperText && !error && (
         <p className="text-sm text-gray-500">{helperText}</p>

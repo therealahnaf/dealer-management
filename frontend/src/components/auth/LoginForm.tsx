@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -76,11 +76,11 @@ const LoginForm: React.FC = () => {
                 <p className="text-gray-600 mt-3 text-lg">Sign in to your dealer account</p>
               </div>
 
-      {error && (
-        <Alert type="error" className="mb-6">
-          {error}
-        </Alert>
-      )}
+        {error && (
+          <Alert type="error" className="mb-6">
+            {error}
+          </Alert>
+        )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="relative group">

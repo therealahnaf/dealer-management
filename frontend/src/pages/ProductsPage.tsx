@@ -3,6 +3,8 @@ import { ProductRead } from '../types/api';
 import api from '../services/api';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
 import useDebounce from '../hooks/useDebounce';
 import { useCart } from '../contexts/CartContext';
 import { Search, ShoppingCart, Package, Grid, List } from 'lucide-react';
@@ -40,7 +42,7 @@ const ProductsPage: React.FC = () => {
   }, [debouncedSearchTerm, fetchProducts]);
 
   const handleQuantityChange = (productId: string, quantity: number) => {
-    setQuantities(prev => ({ ...prev, [productId]: quantity }));
+    setQuantities(prev => ({ ...prev, [productId]: Math.max(1, quantity) }));
   };
 
   const handleAddToCart = (product: ProductRead) => {

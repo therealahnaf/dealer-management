@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
               <li key={item.name}>
                 <Link
                   to={item.href}
-                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
                       ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-md'
                       : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
@@ -58,6 +58,9 @@ const Sidebar: React.FC = () => {
                     }`}
                   />
                   {item.name}
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                  )}
                 </Link>
               </li>
             );
