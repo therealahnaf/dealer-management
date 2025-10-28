@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import useDebounce from '../hooks/useDebounce';
 import { useCart } from '../contexts/CartContext';
+import Loader from '../components/ui/Loader';
 import { Search, ShoppingCart, Package, Grid, List } from 'lucide-react';
 
 const ProductsPage: React.FC = () => {
@@ -69,58 +70,62 @@ const ProductsPage: React.FC = () => {
     });
 
   const ProductCard = ({ product }: { product: ProductRead }) => (
-    <div className="group bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden transition-all duration-300 border border-gray-100">
+    <div className="group bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden transition-all duration-300 border border-gray-100 flex flex-col h-full">
       {/* Product Image Placeholder */}
-      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-32 flex items-center justify-center overflow-hidden">
-        <Package className="w-12 h-12 text-gray-600 group-hover:scale-110 transition-transform duration-300" />
+      <div className="relative bg-brand-light-orange h-32 flex items-center justify-center overflow-hidden">
+        <Package className="w-12 h-12 text-brand-brown group-hover:scale-110 transition-transform duration-300" />
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-600">
           In Stock
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Product Info */}
-        <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2 group-hover:text-gray-600 transition-colors" title={product.name}>
-          {product.name}
-        </h3>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-            {product.pack_size}
-          </span>
-        </div>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
+        <div className="flex-1">
+          <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2 group-hover:text-gray-600 transition-colors" title={product.name}>
+            {product.name}
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+              {product.pack_size}
+            </span>
+          </div>
         </div>
 
-        {/* Add to Cart Section */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+        {/* Price and Add to Cart Section - Sticky at Bottom */}
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+              <button
+                onClick={() => handleQuantityChange(product.product_id, Math.max(1, (quantities[product.product_id] || 1) - 1))}
+                className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min="1"
+                value={quantities[product.product_id] || 1}
+                onChange={(e) => handleQuantityChange(product.product_id, Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-10 py-1 text-center border-0 bg-transparent font-semibold text-gray-800 focus:outline-none text-sm"
+              />
+              <button
+                onClick={() => handleQuantityChange(product.product_id, (quantities[product.product_id] || 1) + 1)}
+                className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
+              >
+                +
+              </button>
+            </div>
             <button
-              onClick={() => handleQuantityChange(product.product_id, Math.max(1, (quantities[product.product_id] || 1) - 1))}
-              className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
+              onClick={() => handleAddToCart(product)}
+              className="flex-1 bg-black text-white px-3 py-1.5 rounded hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-1 font-semibold text-sm"
             >
-              −
-            </button>
-            <input
-              type="number"
-              min="1"
-              value={quantities[product.product_id] || 1}
-              onChange={(e) => handleQuantityChange(product.product_id, Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-10 py-1 text-center border-0 bg-transparent font-semibold text-gray-800 focus:outline-none text-sm"
-            />
-            <button
-              onClick={() => handleQuantityChange(product.product_id, (quantities[product.product_id] || 1) + 1)}
-              className="px-2 py-1 hover:bg-gray-200 transition-colors text-gray-600 text-sm"
-            >
-              +
+              <ShoppingCart className="w-3 h-3" />
             </button>
           </div>
-          <button
-            onClick={() => handleAddToCart(product)}
-            className="flex-1 bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-1 font-semibold text-sm"
-          >
-            <ShoppingCart className="w-3 h-3" />
-          </button>
         </div>
       </div>
     </div>
@@ -182,24 +187,13 @@ const ProductsPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Package className="w-6 h-6" />
-                    <h1 className="text-3xl font-bold">Our Products</h1>
-                  </div>
-                  <div className="flex flex-wrap gap-4 text-gray-100">
-                    <div className="flex items-center gap-2">
-                      <span>Premium collection with competitive prices</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {/* Minimal Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-brand-orange" />
+              <h1 className="text-2xl font-bold text-brand-brown">Products</h1>
             </div>
           </div>
 
@@ -260,14 +254,7 @@ const ProductsPage: React.FC = () => {
           )}
 
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-blue-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Products...</h3>
-              <p className="text-gray-500">Please wait while we fetch the latest products</p>
-            </div>
+            <Loader message="Loading Products..." />
           ) : (
             <>
               {/* Results Header */}

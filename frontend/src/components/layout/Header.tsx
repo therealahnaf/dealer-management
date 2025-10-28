@@ -29,8 +29,8 @@ const Badge: React.FC<{ value?: number; className?: string; ariaLabel?: string }
     <span
       aria-label={ariaLabel}
       className={cx(
-        "absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold px-1",
-        "dark:bg-gray-200 dark:text-gray-900",
+        "absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-brand-orange text-white text-xs font-bold px-1",
+        "dark:bg-brand-orange dark:text-white",
         className
       )}
     >
@@ -69,7 +69,7 @@ const Dropdown: React.FC<{
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200 dark:from-gray-700 dark:to-gray-800"
+        className="relative py-2 px-4 rounded-full bg-brand-orange text-white shadow-md hover:shadow-lg transition-all duration-200"
       >
         {trigger}
       </button>
@@ -114,14 +114,14 @@ const Header: React.FC = () => {
   return (
     <header
       className={cx(
-        "sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-gray-200/70 dark:supports-[backdrop-filter]:bg-gray-950/70",
-        scrolled ? "shadow-md border-b border-gray-200/60 dark:border-gray-800" : "border-b border-transparent"
+        "sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-brand-light-orange/70 dark:supports-[backdrop-filter]:bg-brand-light-orange/70",
+        scrolled ? "shadow-md border-b border-brand-orange/20 dark:border-brand-orange/20" : "border-b border-transparent"
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Left: Brand + Desktop Nav */}
-          <div className="flex items-center gap-3 lg:gap-6">
+          {/* Left: Brand */}
+          <div className="flex items-center gap-3">
             <button
               className="lg:hidden p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -131,17 +131,17 @@ const Header: React.FC = () => {
             </button>
 
             <Link to="/" className="flex items-center gap-2">
-              {/* Replace with <img src=... alt=... /> if you have a logo */}
-              <span className="text-xl font-medium text-gray-900 tracking-tight dark:text-gray-100">ASK Intl Dealer Management Platform</span>
+              <img src="/ask_logo_transparent.png" alt="ASK International" className="h-10 w-auto" />
+              <span className="text-lg font-bold text-brand-brown tracking-tight dark:text-brand-brown hidden sm:inline">Dealer Platform</span>
             </Link>
           </div>
           {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
 
             {/* Cart */}
             <Link
               to="/cart"
-              className="relative p-2 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200 dark:from-gray-700 dark:to-gray-800"
+              className="relative p-2 rounded-full bg-brand-orange text-white shadow-md hover:shadow-lg transition-all duration-200"
               aria-label="Cart"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -152,7 +152,7 @@ const Header: React.FC = () => {
             {user ? (
               <Dropdown
                 label="User menu"
-                trigger={<span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-800 text-sm font-semibold shadow-inner dark:bg-gray-800 dark:text-gray-100">{initials}</span>}
+                trigger={<span className="">{initials}</span>}
               >
                 <div className="px-3 py-2">
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.full_name || user.email}</p>
@@ -178,7 +178,7 @@ const Header: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={logout}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white border-0 hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-md"
+                    className="w-full flex items-center justify-center gap-2 bg-brand-orange text-white border-0 hover:shadow-lg transition-all duration-200 shadow-md"
                   >
                     <LogOut className="h-4 w-4" /> Sign out
                   </Button>
@@ -216,7 +216,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Sheet */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-gray-200/60 bg-white/95 backdrop-blur-sm shadow-sm dark:bg-gray-950/90 dark:border-gray-800">
+        <div className="lg:hidden border-t border-brand-orange/20 bg-brand-light-orange/95 backdrop-blur-sm shadow-sm dark:bg-brand-light-orange/90 dark:border-brand-orange/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <nav className="grid gap-1">
               {NAV_LINKS.map((n) => (
@@ -228,8 +228,8 @@ const Header: React.FC = () => {
                     cx(
                       "px-3 py-2 rounded-lg text-sm font-medium",
                       isActive
-                        ? "bg-gray-900 text-white shadow-sm dark:bg-gray-100 dark:text-gray-900"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        ? "bg-brand-orange text-white shadow-sm dark:bg-brand-orange"
+                        : "text-brand-brown hover:bg-brand-light-orange/50 dark:text-brand-brown dark:hover:bg-brand-light-orange/50"
                     )
                   }
                 >

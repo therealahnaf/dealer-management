@@ -5,6 +5,7 @@ import Layout from '../components/layout/Layout';
 import DealerProfileForm from '../components/dealer/DealerProfileForm';
 import DealerProfileView from '../components/dealer/DealerProfileView';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
 
 const DealerPage: React.FC = () => {
   const [dealer, setDealer] = useState<DealerBase | null>(null);
@@ -44,12 +45,7 @@ const DealerPage: React.FC = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dealer profile...</p>
-          </div>
-        </div>
+        <Loader message="Loading dealer profile..." fullScreen={true} />
       </Layout>
     );
   }

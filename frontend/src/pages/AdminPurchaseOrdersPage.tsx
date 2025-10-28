@@ -1,11 +1,12 @@
 // frontend/src/pages/AdminPurchaseOrdersPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Plus, ShoppingCart, Eye, Calendar, Hash, Receipt, Users, Building2 } from 'lucide-react';
+import { Users, Receipt, ShoppingCart, FileText, Calendar, Building2, Hash, Eye } from 'lucide-react';
 import { getAllPurchaseOrders } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
 
 const AdminPurchaseOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -29,17 +30,10 @@ const AdminPurchaseOrdersPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Purchase Orders...</h3>
-              <p className="text-gray-500">Please wait while we fetch all orders</p>
-            </div>
+            <Loader message="Loading Purchase Orders..." />
           ) : error ? (
             <div className="max-w-2xl mx-auto">
               <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
@@ -48,32 +42,13 @@ const AdminPurchaseOrdersPage: React.FC = () => {
             </div>
           ) : orders.length > 0 ? (
             <div className="max-w-6xl mx-auto">
-              {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <Users className="w-6 h-6" />
-                        <h1 className="text-3xl font-bold">All Purchase Orders</h1>
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Receipt className="w-4 h-4" />
-                          <span>{orders.length} {orders.length === 1 ? 'order' : 'orders'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Orders Table */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <div className="bg-white rounded-2xl shadow-lg border border-brand-orange/20 overflow-hidden">
+                <div className="bg-brand-light-orange px-6 py-4 border-b border-brand-orange/20">
                   <div className="flex items-center gap-3">
-                    <ShoppingCart className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">All Orders</h2>
+                    <ShoppingCart className="w-5 h-5 text-brand-orange" />
+                    <h2 className="text-lg font-bold text-brand-brown">All Orders</h2>
                   </div>
                 </div>
 
@@ -109,11 +84,11 @@ const AdminPurchaseOrdersPage: React.FC = () => {
                         <tr key={order.po_id} className="hover:bg-gray-50 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <FileText className="w-5 h-5 text-gray-600" />
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-900 leading-tight">
+                                <p className="font-semibold text-gray-700 leading-tight">
                                   {order.po_number}
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">Order #{order.po_id}</p>
@@ -122,11 +97,11 @@ const AdminPurchaseOrdersPage: React.FC = () => {
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Building2 className="w-4 h-4 text-blue-600" />
+                              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Building2 className="w-4 h-4 text-gray-600" />
                               </div>
                               <div>
-                                <p className="font-medium text-gray-900 leading-tight">
+                                <p className="font-medium text-gray-700 leading-tight">
                                   {order.dealer?.company_name || 'N/A'}
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">{order.dealer?.contact_person || 'N/A'}</p>
@@ -134,7 +109,7 @@ const AdminPurchaseOrdersPage: React.FC = () => {
                             </div>
                           </td>
                           <td className="py-4 px-6">
-                            <span className="text-sm text-gray-900 font-medium">
+                            <span className="text-sm text-gray-700 font-medium">
                               {new Date(order.po_date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',

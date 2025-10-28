@@ -29,6 +29,13 @@ export const purchaseOrderApi = axios.create({
   },
 });
 
+export const settingsApi = axios.create({
+  baseURL: 'http://localhost:8000/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Request interceptor to add auth token
 const addAuthInterceptor = (api: typeof authApi) => {
   api.interceptors.request.use(
@@ -62,5 +69,6 @@ addAuthInterceptor(authApi);
 addAuthInterceptor(dealerApi);
 addAuthInterceptor(productApi);
 addAuthInterceptor(purchaseOrderApi);
+addAuthInterceptor(settingsApi);
 
-export default { authApi, dealerApi, productApi, purchaseOrderApi };
+export default { authApi, dealerApi, productApi, purchaseOrderApi, settingsApi };

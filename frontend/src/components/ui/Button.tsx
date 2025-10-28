@@ -20,11 +20,11 @@ const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95';
   
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white focus:ring-blue-500 shadow-lg hover:shadow-xl',
-    secondary: 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 focus:ring-gray-500 shadow-md hover:shadow-lg',
-    outline: 'border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 focus:ring-blue-500 backdrop-blur-sm',
-    ghost: 'hover:bg-gray-100/80 text-gray-700 focus:ring-gray-500 backdrop-blur-sm',
-    destructive: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white focus:ring-red-500 shadow-lg hover:shadow-xl'
+    primary: 'bg-brand-orange hover:bg-brand-gray-orange text-white focus:ring-brand-orange shadow-lg hover:shadow-xl',
+    secondary: 'bg-brand-light-orange hover:bg-brand-pastel-gray-orange text-brand-brown focus:ring-brand-orange shadow-md hover:shadow-lg',
+    outline: 'border-2 border-brand-orange hover:border-brand-orange-dark text-brand-orange hover:text-brand-orange-dark focus:ring-brand-orange backdrop-blur-sm',
+    ghost: 'text-brand-orange hover:text-brand-orange-dark hover:bg-brand-light-orange focus:ring-brand-orange backdrop-blur-sm',
+    destructive: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-lg hover:shadow-xl'
   };
   
   const sizeClasses = {

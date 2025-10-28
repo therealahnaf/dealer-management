@@ -83,27 +83,13 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Building2 className="w-6 h-6" />
-                  <h1 className="text-3xl font-bold">{mode === 'create' ? 'Create Dealer Profile' : 'Edit Dealer Profile'}</h1>
-                </div>
-                <div className="flex flex-wrap gap-4 text-gray-100">
-                  <div className="flex items-center gap-2">
-                    <span>{mode === 'create' 
-                      ? 'Set up your dealer profile to start placing orders'
-                      : 'Update your dealer profile information'
-                    }</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Minimal Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-brand-orange" />
+            <h1 className="text-2xl font-bold text-brand-brown">Dealer Profile</h1>
           </div>
         </div>
 
@@ -124,7 +110,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Company Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
             <Building2 className="h-5 w-5 mr-2 text-gray-600" />
             Company Information
           </h3>
@@ -153,7 +139,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
 
         {/* Contact Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
             <User className="h-5 w-5 mr-2 text-gray-600" />
             Contact Information
           </h3>
@@ -183,7 +169,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
 
         {/* Address Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
             <MapPin className="h-5 w-5 mr-2 text-gray-600" />
             Address Information
           </h3>
@@ -229,7 +215,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4 pt-6 border-t">
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
           <Button
             type="button"
             variant="outline"

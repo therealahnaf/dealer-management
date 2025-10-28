@@ -18,6 +18,7 @@ import DashboardPage from './pages/DashboardPage';
 import AdminPurchaseOrdersPage from './pages/AdminPurchaseOrdersPage';
 import AdminPurchaseOrderDetailPage from './pages/AdminPurchaseOrderDetailPage';
 import AdminDealersPage from './pages/AdminDealersPage';
+import AdminSettingsPage from './pages/AdminSettingsPage';
 import { useAuth } from './contexts/AuthContext';
 // ...any other admin pages
 
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/admin/purchase-orders" element={<AdminPurchaseOrdersPage />} />
             <Route path="/admin/purchase-orders/:dealerId/:poId" element={<AdminPurchaseOrderDetailPage />} />
             <Route path="/admin/dealers" element={<AdminDealersPage />} />
+            <Route path="/admin/settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
 

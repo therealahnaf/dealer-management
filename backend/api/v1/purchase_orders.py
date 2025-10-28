@@ -6,10 +6,12 @@ from schemas.purchase_order import (
     PurchaseOrderCreate,
     PurchaseOrderUpdate,
     PurchaseOrder as PurchaseOrderSchema,
+    DocumentSchema,
 )
 from services.purchase_order_service_supabase import (
     PurchaseOrderServiceSB as PurchaseOrderService,
 )
+from services.document_generation_sevice import DocumentGenerationService
 from api.v1.deps import get_current_user, require_roles
 from models.user import UserRole
 
@@ -103,6 +105,37 @@ def get_all_purchase_orders(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return PurchaseOrderService.get_all_purchase_orders()
 
+@router.get("/{po_id}/invoice", response_model=DocumentSchema, tags=["Purchase Orders"])
+def download_invoice(
+    po_id: int,
+    current_user = Depends(get_current_user),
+):
+    """
+    Download invoice for approved purchase order
+    """
+    # if current_user["role"] != "buyer":
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+
+    # Get purchase order details
+    print(f"DEBUG: current_user = {current_user}")
+    print(f"DEBUG: current_user role = {current_user.get('role')}")
+    print(f"DEBUG: current_user status = {current_user.get('status')}")
+    order = PurchaseOrderService.get_purchase_order_details(po_id, current_user["user_id"])
+
+    if order["status"] != "approved":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only approved orders can have invoices")
+
+    DocumentGenerationService.generate_invoice(po_id)
+    resp = DocumentSchema(
+        document_id=po_id,
+        document_name="Invoice",
+        document_type="Invoice",
+        document_url=""
+    )
+    return {
+        resp
+    }
+
 @router.get("/{dealer_id}/{po_id}", response_model=PurchaseOrderSchema, tags=["Purchase Orders"])
 def get_purchase_order_details_by_dealer_and_po_id(
     dealer_id: str,
@@ -115,32 +148,6 @@ def get_purchase_order_details_by_dealer_and_po_id(
     if current_user["role"] != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return PurchaseOrderService.get_purchase_order_details(po_id, "", dealer_id)
-    
-@router.get("/{po_id}/invoice", tags=["Purchase Orders"])
-def download_invoice(
-    po_id: int,
-    current_user = Depends(get_current_user),
-):
-    """
-    Download invoice for approved purchase order
-    """
-    if current_user["role"] != "buyer":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-
-    # Get purchase order details
-    order = PurchaseOrderService.get_purchase_order_details(po_id, current_user["user_id"])
-
-    if order["status"] != "approved":
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only approved orders can have invoices")
-
-    # For now, return a simple message - this could be enhanced to generate actual PDF invoices
-    return {
-        "message": "Invoice download functionality",
-        "order_id": po_id,
-        "po_number": order["po_number"],
-        "status": "approved",
-        "note": "This endpoint can be enhanced to generate and return actual PDF invoices"
-    }
 @router.put("/{dealer_id}/{po_id}/approve", response_model=PurchaseOrderSchema, tags=["Purchase Orders"])
 def approve_purchase_order(
     dealer_id: str,

@@ -6,6 +6,13 @@ import uuid
 from models.purchase_order import PurchaseOrderStatus
 from models.dealer import Dealer as DealerModel
 
+class DocumentSchema(BaseModel):
+    document_id: uuid.UUID
+    document_name: str
+    document_type: str
+    document_url: str
+    
+
 class ProductBase(BaseModel):
     product_id: uuid.UUID
     name: str

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Mail, Phone, Building2, Hash } from 'lucide-react';
-import CreateDealerForm from '../components/admin/CreateDealerForm';
-import Alert from '../components/ui/Alert';
-import Layout from '../components/layout/Layout';
+import { Link } from 'react-router-dom';
+import { Users, Plus, Building2, Mail, Phone } from 'lucide-react';
 import { dealerApi } from '../services/api';
+import Layout from '../components/layout/Layout';
+import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
+import CreateDealerForm from '../components/admin/CreateDealerForm';
 
 interface Dealer {
   dealer_id: string;
@@ -68,70 +70,67 @@ const AdminDealersPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Dealers...</h3>
-              <p className="text-gray-500">Please wait while we fetch all dealers</p>
-            </div>
+            <Loader message="Loading Dealers..." />
           ) : error ? (
             <div className="max-w-2xl mx-auto">
               <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
                 {error}
               </Alert>
             </div>
+          ) : showCreateForm ? (
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowCreateForm(false)}
+                  className="text-brand-orange hover:text-brand-gray-orange font-semibold text-sm flex items-center gap-2"
+                >
+                  ← Back to Dealers
+                </button>
+              </div>
+              <CreateDealerForm
+                onSubmit={handleCreateDealer}
+                onCancel={() => setShowCreateForm(false)}
+                loading={submitting}
+              />
+            </div>
           ) : dealers.length > 0 ? (
             <div className="max-w-6xl mx-auto">
-              {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <Users className="w-6 h-6" />
-                        <h1 className="text-3xl font-bold">All Dealers</h1>
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Hash className="w-4 h-4" />
-                          <span>{dealers.length} {dealers.length === 1 ? 'dealer' : 'dealers'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowCreateForm(true)}
-                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 font-semibold"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create Dealer
-                    </button>
-                  </div>
+              {/* Minimal Header with Button */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-brand-orange" />
+                  <h1 className="text-2xl font-bold text-brand-brown">Dealers</h1>
                 </div>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="flex items-center gap-2 bg-brand-orange hover:bg-brand-gray-orange text-white px-4 py-2 rounded-lg transition-colors font-semibold text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create
+                </button>
               </div>
 
               {/* Dealers List */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <div className="bg-white rounded-2xl shadow-lg border border-brand-orange/20 overflow-hidden">
+                <div className="bg-brand-light-orange px-6 py-4 border-b border-brand-orange/20">
                   <div className="flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Dealer List</h2>
+                    <Building2 className="w-5 h-5 text-brand-orange" />
+                    <h2 className="text-lg font-bold text-brand-brown">Dealer List</h2>
                   </div>
                 </div>
 
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-brand-orange/10">
                   {dealers.map((dealer) => (
-                    <div key={dealer.dealer_id} className="p-6 hover:bg-gray-50 transition-colors duration-200">
+                    <div key={dealer.dealer_id} className="p-6 hover:bg-brand-light-orange/50 transition-colors duration-200">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-gray-900">{dealer.company_name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">Code: {dealer.customer_code}</p>
+                          <h3 className="text-lg font-bold text-brand-brown">{dealer.company_name}</h3>
+                          <p className="text-sm text-brand-gray-orange/70 mt-1">Code: {dealer.customer_code}</p>
                         </div>
-                        <div className="bg-green-400 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        <div className="bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
                           Active
                         </div>
                       </div>
@@ -207,15 +206,6 @@ const AdminDealersPage: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Create Dealer Modal */}
-      {showCreateForm && (
-        <CreateDealerForm
-          onSubmit={handleCreateDealer}
-          onCancel={() => setShowCreateForm(false)}
-          loading={submitting}
-        />
-      )}
     </Layout>
   );
 };

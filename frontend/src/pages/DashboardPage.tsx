@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   TrendingUp, 
@@ -15,9 +15,19 @@ import {
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Layout from '../components/layout/Layout';
+import Loader from '../components/ui/Loader';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading dashboard data
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const stats = [
     {
@@ -63,23 +73,26 @@ const DashboardPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Approved': return 'text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100';
-      case 'Pending': return 'text-yellow-700 bg-gradient-to-r from-yellow-50 to-yellow-100';
-      case 'Delivered': return 'text-green-700 bg-gradient-to-r from-green-50 to-green-100';
-      case 'Processing': return 'text-purple-700 bg-gradient-to-r from-purple-50 to-purple-100';
-      default: return 'text-gray-700 bg-gradient-to-r from-gray-50 to-gray-100';
+      case 'Approved': return 'text-brand-orange bg-brand-light-orange';
+      case 'Pending': return 'text-brand-gray-orange bg-brand-light-orange';
+      case 'Delivered': return 'text-brand-brown bg-brand-light-orange';
+      case 'Processing': return 'text-brand-orange bg-brand-light-orange';
+      default: return 'text-brand-brown bg-brand-light-orange';
     }
   };
 
   return (
     <Layout>
+      {loading ? (
+        <Loader message="Loading Dashboard..." />
+      ) : (
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold text-brand-brown mb-2">
             Dashboard
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-brand-gray-orange text-lg">
             Welcome back, {user?.full_name || user?.email}
           </p>
         </div>
@@ -204,6 +217,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </Card>
       </div>
+      )}
     </Layout>
   );
 };

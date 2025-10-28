@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Plus, ShoppingCart, Eye, Calendar, Hash, Receipt } from 'lucide-react';
+import { FileText, Plus, Calendar, Hash, Eye, ShoppingCart } from 'lucide-react';
+import { purchaseOrderApi } from '../services/api';
 import { getMyPurchaseOrders } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
 
 const PurchaseOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -28,17 +30,10 @@ const PurchaseOrdersPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Purchase Orders...</h3>
-              <p className="text-gray-500">Please wait while we fetch your order history</p>
-            </div>
+            <Loader message="Loading Purchase Orders..." />
           ) : error ? (
             <div className="max-w-2xl mx-auto">
               <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
@@ -47,84 +42,69 @@ const PurchaseOrdersPage: React.FC = () => {
             </div>
           ) : orders.length > 0 ? (
             <div className="max-w-6xl mx-auto">
-              {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <FileText className="w-6 h-6" />
-                        <h1 className="text-3xl font-bold">My Purchase Orders</h1>
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Receipt className="w-4 h-4" />
-                          <span>{orders.length} {orders.length === 1 ? 'order' : 'orders'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <Link
-                        to="/cart"
-                        className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 font-semibold"
-                      >
-                        <Plus className="w-4 h-4" />
-                        New Purchase Order
-                      </Link>
-                    </div>
-                  </div>
+              {/* Minimal Header with Button */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-brand-orange" />
+                  <h1 className="text-2xl font-bold text-brand-brown">Purchase Orders</h1>
                 </div>
+                <Link
+                  to="/cart"
+                  className="flex items-center gap-2 bg-brand-orange hover:bg-brand-gray-orange text-white px-4 py-2 rounded-lg transition-colors font-semibold text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Order
+                </Link>
               </div>
 
               {/* Orders Table */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <div className="bg-white rounded-2xl shadow-lg border border-brand-orange/20 overflow-hidden">
+                <div className="bg-brand-light-orange px-6 py-4 border-b border-brand-orange/20">
                   <div className="flex items-center gap-3">
-                    <ShoppingCart className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Order History</h2>
+                    <ShoppingCart className="w-5 h-5 text-brand-orange" />
+                    <h2 className="text-lg font-bold text-brand-brown">Order History</h2>
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <thead className="bg-brand-light-orange border-b border-brand-orange/20">
                       <tr>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <th className="text-left py-4 px-6 text-xs font-bold text-brand-gray-orange uppercase tracking-wider">
                           <div className="flex items-center gap-2">
                             <Hash className="w-4 h-4" />
                             Order #
                           </div>
                         </th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <th className="text-left py-4 px-6 text-xs font-bold text-brand-gray-orange uppercase tracking-wider">
                           <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
                             Date
                           </div>
                         </th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
-                        <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                        <th className="text-left py-4 px-6 text-xs font-bold text-brand-gray-orange uppercase tracking-wider">Status</th>
+                        <th className="text-right py-4 px-6 text-xs font-bold text-brand-gray-orange uppercase tracking-wider">Total</th>
+                        <th className="text-center py-4 px-6 text-xs font-bold text-brand-gray-orange uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-brand-orange/10">
                       {orders.map((order) => (
-                        <tr key={order.po_id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={order.po_id} className="hover:bg-brand-light-orange/50 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <FileText className="w-5 h-5 text-gray-600" />
+                              <div className="w-10 h-10 bg-brand-light-orange rounded-lg flex items-center justify-center flex-shrink-0">
+                                <FileText className="w-5 h-5 text-brand-orange" />
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-900 leading-tight">
+                                <p className="font-semibold text-brand-brown leading-tight">
                                   {order.po_number}
                                 </p>
-                                <p className="text-xs text-gray-500 mt-1">Order #{order.po_id}</p>
+                                <p className="text-xs text-brand-gray-orange/70 mt-1">Order #{order.po_id}</p>
                               </div>
                             </div>
                           </td>
                           <td className="py-4 px-6">
-                            <span className="text-sm text-gray-900 font-medium">
+                            <span className="text-sm text-brand-brown font-medium">
                               {new Date(order.po_date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',

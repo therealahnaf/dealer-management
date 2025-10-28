@@ -5,6 +5,7 @@ import { getPurchaseOrderDetailsByDealerAndPoId, approvePurchaseOrder } from '..
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
 import {
   ArrowLeft,
   Building2,
@@ -105,17 +106,10 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-2">
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-gray-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Order Details...</h3>
-              <p className="text-gray-500">Please wait while we fetch your order information</p>
-            </div>
+            <Loader message="Loading Order Details..." />
           ) : error ? (
             <div className="max-w-2xl mx-auto">
               <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
@@ -125,8 +119,8 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
           ) : order ? (
             <div className="max-w-6xl mx-auto">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
+              <div className="bg-white rounded-2xl shadow-xl border border-brand-orange/20 overflow-hidden mb-8">
+                <div className="bg-brand-orange px-8 py-6 text-white">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -158,6 +152,31 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                 {/* Left Column - Dealer Info & Summary */}
                 <div className="xl:col-span-1 space-y-6">
                   {/* Dealer Information */}
+                                    {order.status !== 'approved' && (
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-gray-600" />
+                          <h2 className="text-lg font-bold text-gray-800">Admin Actions</h2>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <button
+                          onClick={handleApprove}
+                          disabled={approving}
+                          className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-6 py-3 rounded-xl transition-colors font-semibold"
+                        >
+                          {approving ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
+                          {approving ? 'Approving...' : 'Approve Order'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                       <div className="flex items-center gap-3">
@@ -238,33 +257,6 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Admin Actions */}
-                  {order.status !== 'approved' && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center gap-3">
-                          <Check className="w-5 h-5 text-gray-600" />
-                          <h2 className="text-lg font-bold text-gray-800">Admin Actions</h2>
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        <button
-                          onClick={handleApprove}
-                          disabled={approving}
-                          className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-6 py-3 rounded-xl transition-colors font-semibold"
-                        >
-                          {approving ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
-                          {approving ? 'Approving...' : 'Approve Order'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Right Column - Order Items */}

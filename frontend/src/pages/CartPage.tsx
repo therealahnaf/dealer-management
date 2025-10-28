@@ -6,6 +6,7 @@ import { createPurchaseOrder } from '../services/purchaseOrderService';
 import { getMyDealerProfile } from '../services/dealerService';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
 
 const CartPage: React.FC = () => {
   const { cartItems, removeFromCart, clearCart, itemCount } = useCart();
@@ -73,17 +74,10 @@ const CartPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-brand-light-orange">
         <div className="container mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center py-20">
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Processing Order...</h3>
-              <p className="text-gray-500">Please wait while we submit your order</p>
-            </div>
+            <Loader message="Processing Order..." />
           ) : error ? (
             <div className="max-w-2xl mx-auto">
               <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
@@ -93,8 +87,8 @@ const CartPage: React.FC = () => {
           ) : itemCount > 0 ? (
             <div className="max-w-6xl mx-auto">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-6 text-white">
+              <div className="bg-white rounded-2xl shadow-xl border border-brand-orange/20 overflow-hidden mb-8">
+                <div className="bg-brand-orange px-8 py-6 text-white">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
