@@ -8,21 +8,14 @@ import Alert from '../components/ui/Alert';
 import Loader from '../components/ui/Loader';
 import {
   ArrowLeft,
-  Building2,
-  Phone,
-  Mail,
-  MapPin,
-  Package,
-  Calendar,
-  FileText,
-  Hash,
   CheckCircle,
-  Clock,
-  AlertCircle,
   Receipt,
   Eye,
   Check
 } from 'lucide-react';
+import DealerInfoCard from '../components/dealer/DealerInfoCard';
+import OrderItemsTable from '../components/tables/OrderItemsTable';
+import OrderDetailHeader from '../components/layout/OrderDetailHeader';
 
 const AdminPurchaseOrderDetailPage: React.FC = () => {
   const { dealerId, poId } = useParams<{ dealerId: string; poId: string }>();
@@ -74,35 +67,6 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
     });
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return <Clock className="w-4 h-4" />;
-      case 'submitted':
-        return <AlertCircle className="w-4 h-4" />;
-      case 'approved':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'invoiced':
-        return <Receipt className="w-4 h-4" />;
-      default:
-        return <FileText className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'submitted':
-        return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'approved':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'invoiced':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
 
   return (
     <Layout>
@@ -118,34 +82,16 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
             </div>
           ) : order ? (
             <div className="max-w-6xl mx-auto">
-              {/* Header Section */}
-              <div className="bg-white rounded-2xl shadow-xl border border-brand-orange/20 overflow-hidden mb-8">
-                <div className="bg-brand-orange px-8 py-6 text-white">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <Hash className="w-6 h-6" />
-                        <h1 className="text-3xl font-bold">Order {order.po_number}</h1>
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(order.po_date)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${getStatusColor(order.status)} bg-white/20 backdrop-blur-sm`}>
-                        {getStatusIcon(order.status)}
-                        <span className="font-semibold text-white">
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex justify-between items-center mb-6">
+                <Link 
+                  to="/admin/purchase-orders" 
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Orders
+                </Link>
               </div>
+              <OrderDetailHeader order={order} />
 
               {/* Main Content */}
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -177,55 +123,7 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <Building2 className="w-5 h-5 text-gray-600" />
-                        <h2 className="text-lg font-bold text-gray-800">Dealer Information</h2>
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      {order.dealer ? (
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-1">{order.dealer.company_name}</h3>
-                            <p className="text-gray-600">{order.dealer.contact_person}</p>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                              <Phone className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
-                              <span className="text-sm text-gray-600">{order.dealer.contact_number}</span>
-                            </div>
-
-                            {order.dealer.email && (
-                              <div className="flex items-start gap-3">
-                                <Mail className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
-                                <span className="text-sm text-gray-600">{order.dealer.email}</span>
-                              </div>
-                            )}
-
-                            <div className="flex items-start gap-3">
-                              <MapPin className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
-                              <div className="text-sm text-gray-600">
-                                <p className="font-medium mb-1">Billing Address:</p>
-                                <p className="leading-relaxed">{order.dealer.billing_address}</p>
-                                {order.dealer.shipping_address && order.dealer.shipping_address !== order.dealer.billing_address && (
-                                  <>
-                                    <p className="font-medium mt-3 mb-1">Shipping Address:</p>
-                                    <p className="leading-relaxed">{order.dealer.shipping_address}</p>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-center py-4">Dealer information not available</p>
-                      )}
-                    </div>
-                  </div>
+                  <DealerInfoCard dealer={order.dealer} />
 
                   {/* Order Summary */}
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -259,83 +157,13 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Right Column - Order Items */}
                 <div className="xl:col-span-2">
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Package className="w-5 h-5 text-gray-600" />
-                          <h2 className="text-lg font-bold text-gray-800">Order Items</h2>
-                        </div>
-                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-semibold">
-                          {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                          <tr>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Product</th>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Pack Size</th>
-                            <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Unit Price</th>
-                            <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Qty</th>
-                            <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {order.items.map((item, index) => (
-                            <tr key={item.po_item_id} className="hover:bg-gray-50 transition-colors">
-                              <td className="py-4 px-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <Package className="w-5 h-5 text-gray-600" />
-                                  </div>
-                                  <div>
-                                    <p className="font-semibold text-gray-900 leading-tight">
-                                      {item.product?.name || `Product ID: ${item.product_id}`}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">Item #{index + 1}</p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="py-4 px-6">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  {item.pack_size_snapshot}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                <span className="font-semibold text-gray-900">${item.unit_price.toFixed(2)}</span>
-                              </td>
-                              <td className="py-4 px-6 text-center">
-                                <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
-                                  {item.quantity}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                <span className="text-lg font-bold text-gray-600">${item.total_price.toFixed(2)}</span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <OrderItemsTable items={order.items} />
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <Link
-                  to="/admin/purchase-orders"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Orders
-                </Link>
-
+              <div className="mt-8 text-right">
                 <div className="text-sm text-gray-500">
                   Last updated: {formatDate(order.po_date)}
                 </div>

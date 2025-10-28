@@ -8,15 +8,17 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-8 bg-white/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+    <div className="h-screen overflow-hidden">
+      <div className="flex flex-col h-full">
+        <Header />
+        <div className="flex h-full">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto bg-white/50 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto p-8">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

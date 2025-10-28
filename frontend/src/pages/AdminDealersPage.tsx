@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Users, Plus, Building2, Mail, Phone } from 'lucide-react';
 import { dealerApi } from '../services/api';
 import Layout from '../components/layout/Layout';

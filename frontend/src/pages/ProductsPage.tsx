@@ -3,8 +3,6 @@ import { ProductRead } from '../types/api';
 import api from '../services/api';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import useDebounce from '../hooks/useDebounce';
 import { useCart } from '../contexts/CartContext';
 import Loader from '../components/ui/Loader';

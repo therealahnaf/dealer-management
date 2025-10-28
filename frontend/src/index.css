@@ -12,6 +12,21 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  /* Hide scrollbars across all browsers */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    display: none;
+  }
+  
+  ::-webkit-scrollbar-track {
+    display: none;
   }
 }
 

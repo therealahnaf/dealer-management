@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, AlertCircle } from 'lucide-react';
+import { Save, AlertCircle } from 'lucide-react';
 import { settingsApi } from '../services/api';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';

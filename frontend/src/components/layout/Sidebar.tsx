@@ -36,8 +36,8 @@ const Sidebar: React.FC = () => {
   const navigation = user.role === 'admin' ? adminNavigation : buyerNavigation;
 
   return (
-    <div className="bg-gradient-to-b from-brand-black to-brand-dark w-64 min-h-screen shadow-lg border-r border-brand-gray-orange/20 backdrop-blur-sm relative">
-      <nav className="mt-8 px-4">
+    <div className="bg-gradient-to-b from-brand-black to-brand-dark w-64 h-full flex flex-col shadow-lg border-r border-brand-gray-orange/20 backdrop-blur-sm relative">
+      <nav className="flex-1 overflow-y-auto mt-5 px-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
             const isActive = location.pathname.startsWith(item.href);
@@ -66,19 +66,6 @@ const Sidebar: React.FC = () => {
           })}
         </ul>
       </nav>
-
-      {/* User Profile Section */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-brand-gray-orange/20">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
-            <Users className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-brand-light-orange truncate">{user.full_name || user.email}</p>
-            <p className="text-xs text-brand-gray-orange/70 capitalize">{user.role}</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

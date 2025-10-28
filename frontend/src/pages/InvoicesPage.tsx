@@ -1,26 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  FileText,
-  Download,
-  Plus,
-  ShoppingCart,
-  Eye,
-  Calendar,
-  Hash,
-  DollarSign
-} from 'lucide-react';
+import { FileText, Download, Eye, DollarSign, Plus, ShoppingCart } from 'lucide-react';
 import { getApprovedPurchaseOrders } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
 import Loader from '../components/ui/Loader';
+import OrdersTable from '../components/tables/OrdersTable';
 
 const InvoicesPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [downloadingInvoice, setDownloadingInvoice] = useState<{ [key: number]: boolean }>({});
+  const [downloadingInvoices, setDownloadingInvoices] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchApprovedOrders = async () => {
@@ -37,7 +29,7 @@ const InvoicesPage: React.FC = () => {
   }, []);
 
   const handleDownloadInvoice = async (orderId: number, poNumber: string) => {
-    setDownloadingInvoice(prev => ({ ...prev, [orderId]: true }));
+    setDownloadingInvoices(prev => ({ ...prev, [orderId]: true }));
     try {
       // Simulate invoice download - replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -53,18 +45,10 @@ const InvoicesPage: React.FC = () => {
     } catch (error) {
       console.error('Error downloading invoice:', error);
     } finally {
-      setDownloadingInvoice(prev => ({ ...prev, [orderId]: false }));
+      setDownloadingInvoices(prev => ({ ...prev, [orderId]: false }));
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   return (
     <Layout>
@@ -95,93 +79,13 @@ const InvoicesPage: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Orders Table */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <ShoppingCart className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Approved Orders</h2>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                          <div className="flex items-center gap-2">
-                            <Hash className="w-4 h-4" />
-                            Order #
-                          </div>
-                        </th>
-                        <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Date
-                          </div>
-                        </th>
-                        <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
-                        <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {orders.map((order) => (
-                        <tr key={order.po_id} className="hover:bg-gray-50 transition-colors">
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <FileText className="w-5 h-5 text-gray-600" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-gray-900 leading-tight">
-                                  {order.po_number}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">Order #{order.po_id}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-sm text-gray-900 font-medium">
-                              {formatDate(order.po_date)}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <DollarSign className="w-4 h-4 text-gray-400" />
-                              <span className="text-lg font-bold text-gray-600">
-                                {order.total_inc_vat.toFixed(2)} tk
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <div className="flex items-center gap-2 justify-center">
-                              <Link
-                                to={`/purchase-orders/${order.po_id}`}
-                                className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors text-sm font-semibold"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View Order
-                              </Link>
-                              <button
-                                onClick={() => handleDownloadInvoice(order.po_id, order.po_number)}
-                                disabled={downloadingInvoice[order.po_id]}
-                                className="inline-flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-600 px-4 py-2 rounded-lg transition-colors text-sm font-semibold disabled:opacity-50"
-                              >
-                                {downloadingInvoice[order.po_id] ? (
-                                  <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <Download className="w-4 h-4" />
-                                )}
-                                {downloadingInvoice[order.po_id] ? 'Downloading...' : 'Download'}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <OrdersTable
+                orders={orders}
+                isInvoicePage={true}
+                onDownloadInvoice={handleDownloadInvoice}
+                downloadingInvoices={downloadingInvoices}
+                showStatusColumn={false}
+              />
 
               {/* Footer */}
               <div className="mt-8 text-center">
