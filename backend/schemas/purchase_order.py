@@ -96,3 +96,14 @@ class PurchaseOrder(PurchaseOrderBase):
                 finally:
                     db.close()
             return super().from_orm(obj)
+
+
+class PurchaseOrderList(BaseModel):
+    """Schema for a list of purchase orders with pagination info."""
+    items: List[PurchaseOrder]
+    total: int
+    skip: int
+    limit: int
+
+    class Config:
+        orm_mode = True

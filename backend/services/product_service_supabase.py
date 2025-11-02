@@ -25,3 +25,13 @@ class ProductServiceSB:
             .or_(f"name.ilike.{like},sku_code.ilike.{like}") \
             .execute()
         return res.data or []
+
+    @staticmethod
+    def get_products_count(search: Optional[str] = None) -> int:
+        """Get total count of active products, optionally filtered by search term."""
+        q = supabase.table("products").select("*", count="exact").eq("status", "active")
+        if search:
+            like = f"%{search}%"
+            q = q.or_(f"name.ilike.{like},sku_code.ilike.{like}")
+        res = q.execute()
+        return res.count or 0

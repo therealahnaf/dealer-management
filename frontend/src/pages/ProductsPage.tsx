@@ -8,6 +8,13 @@ import { useCart } from '../contexts/CartContext';
 import Loader from '../components/ui/Loader';
 import { Search, ShoppingCart, Package, Grid, List } from 'lucide-react';
 
+interface ProductListResponse {
+  items: ProductRead[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<ProductRead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,17 +23,22 @@ const ProductsPage: React.FC = () => {
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'price'>('name');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [pageSize] = useState(20);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const { addToCart } = useCart();
 
-  const fetchProducts = useCallback(async (search: string) => {
+  const fetchProducts = useCallback(async (search: string, page: number) => {
     setLoading(true);
     try {
-      const response = await api.productApi.get<ProductRead[]>('/products/', {
-        params: { search },
+      const skip = (page - 1) * pageSize;
+      const response = await api.productApi.get<ProductListResponse>('/products/', {
+        params: { search: search || undefined, skip, limit: pageSize },
       });
-      setProducts(response.data);
+      setProducts(response.data.items);
+      setTotalProducts(response.data.total);
       setError('');
     } catch (err) {
       setError('Failed to fetch products. Please try again later.');
@@ -34,11 +46,15 @@ const ProductsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pageSize]);
 
   useEffect(() => {
-    fetchProducts(debouncedSearchTerm);
-  }, [debouncedSearchTerm, fetchProducts]);
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    fetchProducts(debouncedSearchTerm, currentPage);
+  }, [debouncedSearchTerm, currentPage, fetchProducts]);
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setQuantities(prev => ({ ...prev, [productId]: Math.max(1, quantity) }));
@@ -258,25 +274,54 @@ const ProductsPage: React.FC = () => {
               {/* Results Header */}
               <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-800">{processedProducts.length}</span> products
+                  <span className="font-semibold text-gray-800">{processedProducts.length}</span> of{' '}
+                  <span className="font-semibold text-gray-800">{totalProducts}</span> products
                 </p>
               </div>
 
               {/* Products Grid/List */}
               {processedProducts.length > 0 ? (
-                viewMode === 'grid' ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {processedProducts.map((product) => (
-                      <ProductCard key={product.product_id} product={product} />
-                    ))}
+                <>
+                  {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      {processedProducts.map((product) => (
+                        <ProductCard key={product.product_id} product={product} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {processedProducts.map((product) => (
+                        <ProductListItem key={product.product_id} product={product} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  <div className="mt-8 flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                    >
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">
+                        Page <span className="font-semibold">{currentPage}</span> of{' '}
+                        <span className="font-semibold">{Math.ceil(totalProducts / pageSize)}</span>
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      disabled={currentPage >= Math.ceil(totalProducts / pageSize)}
+                      className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                    >
+                      Next
+                    </button>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {processedProducts.map((product) => (
-                      <ProductListItem key={product.product_id} product={product} />
-                    ))}
-                  </div>
-                )
+                </>
               ) : (
                 <div className="text-center py-20">
                   <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">

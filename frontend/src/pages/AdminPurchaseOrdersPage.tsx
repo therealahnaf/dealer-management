@@ -12,12 +12,18 @@ const AdminPurchaseOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [pageSize] = useState(20);
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       try {
-        const data = await getAllPurchaseOrders();
-        setOrders(data);
+        const skip = (currentPage - 1) * pageSize;
+        const data = await getAllPurchaseOrders(skip, pageSize);
+        setOrders(data.items);
+        setTotalOrders(data.total);
       } catch (err) {
         setError('Failed to fetch purchase orders');
       }
@@ -25,7 +31,7 @@ const AdminPurchaseOrdersPage: React.FC = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [currentPage, pageSize]);
 
 
   return (
@@ -45,11 +51,30 @@ const AdminPurchaseOrdersPage: React.FC = () => {
 
               <OrdersTable orders={orders} showDealerColumn={true} isAdminPage={true} />
 
-              {/* Footer */}
-              <div className="mt-8 text-center">
-                <div className="text-sm text-gray-500">
-                  Showing {orders.length} purchase {orders.length === 1 ? 'order' : 'orders'}
+              {/* Pagination */}
+              <div className="mt-8 flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    Page <span className="font-semibold">{currentPage}</span> of{' '}
+                    <span className="font-semibold">{Math.ceil(totalOrders / pageSize)}</span>
+                  </span>
                 </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= Math.ceil(totalOrders / pageSize)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                >
+                  Next
+                </button>
               </div>
             </div>
           ) : (

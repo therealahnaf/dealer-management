@@ -36,7 +36,7 @@ const LoginForm: React.FC = () => {
     <div className="w-full max-w-md">
       {/* Logo */}
       <div className="text-center mb-8">
-        <img src="/ask_logo_transparent.png" alt="ASK International" className="h-40 w-40 mx-auto mb-8" />
+        <img src="/ask_logo_transparent.png" alt="ASK International" className="h-40 w-40 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
         <p className="text-gray-600 mt-2">Sign in to your dealer account</p>
       </div>

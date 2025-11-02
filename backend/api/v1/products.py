@@ -6,23 +6,29 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from services.product_service_supabase import ProductServiceSB as ProductService
-from schemas.product import ProductRead
+from schemas.product import ProductRead, ProductList
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ProductRead])
+@router.get("/", response_model=ProductList)
 def list_active_products(
     search: Optional[str] = Query(None, description="Search products by name or SKU"),
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=1000),
 ):
     """
-    List all active products.
+    List all active products with pagination.
     Supports searching by name and SKU.
     """
     products = ProductService.get_products(skip=skip, limit=limit, search=search)
-    return products
+    total = ProductService.get_products_count(search=search)
+    return ProductList(
+        items=products,
+        total=total,
+        skip=skip,
+        limit=limit
+    )
 
 
 @router.get("/{product_id}", response_model=ProductRead)

@@ -143,26 +143,49 @@ class PurchaseOrderServiceSB:
             raise HTTPException(status_code=500, detail="Purchase order not found after create")
         return _with_required_fields(order)
 
-    def get_my_orders(user_id: str):
+    @staticmethod
+    def get_my_orders(user_id: str, skip: int = 0, limit: int = 100):
         res = supabase.table("purchase_orders") \
             .select("*") \
             .eq("created_by_user", str(user_id)) \
             .order("po_id", desc=True) \
+            .range(skip, skip + limit - 1) \
             .execute()
         orders = res.data or []
         # IMPORTANT: enrich each order to match your response_model
         return [_with_required_fields(o) for o in orders]
 
-    def get_my_approved_orders(user_id: str):
+    @staticmethod
+    def get_my_orders_count(user_id: str) -> int:
+        """Get total count of user's purchase orders."""
+        res = supabase.table("purchase_orders") \
+            .select("*", count="exact") \
+            .eq("created_by_user", str(user_id)) \
+            .execute()
+        return res.count or 0
+
+    @staticmethod
+    def get_my_approved_orders(user_id: str, skip: int = 0, limit: int = 100):
         res = supabase.table("purchase_orders") \
             .select("*") \
             .eq("created_by_user", str(user_id)) \
             .eq("status", "approved") \
             .order("po_id", desc=True) \
+            .range(skip, skip + limit - 1) \
             .execute()
         orders = res.data or []
         # IMPORTANT: enrich each order to match your response_model
         return [_with_required_fields(o) for o in orders]
+
+    @staticmethod
+    def get_my_approved_orders_count(user_id: str) -> int:
+        """Get total count of user's approved purchase orders."""
+        res = supabase.table("purchase_orders") \
+            .select("*", count="exact") \
+            .eq("created_by_user", str(user_id)) \
+            .eq("status", "approved") \
+            .execute()
+        return res.count or 0
 
     @staticmethod
     def approve_purchase_order(dealer_id: int, po_id: int):
@@ -170,14 +193,23 @@ class PurchaseOrderServiceSB:
         return PurchaseOrderServiceSB.get_purchase_order_details(po_id, "", dealer_id)
 
     @staticmethod
-    def get_all_purchase_orders():
+    def get_all_purchase_orders(skip: int = 0, limit: int = 100):
         res = supabase.table("purchase_orders") \
             .select("*") \
             .order("po_id", desc=True) \
+            .range(skip, skip + limit - 1) \
             .execute()
         orders = res.data or []
         # IMPORTANT: enrich each order to match your response_model
         return [_with_required_fields(o) for o in orders]
+
+    @staticmethod
+    def get_all_purchase_orders_count() -> int:
+        """Get total count of all purchase orders."""
+        res = supabase.table("purchase_orders") \
+            .select("*", count="exact") \
+            .execute()
+        return res.count or 0
 
     @staticmethod
     def get_purchase_order_details(po_id: int, user_id: str, dealer_id: str = None):
