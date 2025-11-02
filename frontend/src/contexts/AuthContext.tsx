@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 interface JwtPayload {
   sub: string;
   email: string;
+  full_name?: string;
   role: UserRole | string; // tolerate backend variance
   exp: number;
   iat: number;
@@ -76,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userData: UserRead = {
           user_id: decoded.sub,
           email: decoded.email || '',
+          full_name: decoded.full_name || undefined,
           role: normalizeRole(decoded.role),
           status: UserStatus.ACTIVE,
         };
@@ -112,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData: UserRead = {
         user_id: decoded.sub,
         email: decoded.email || credentials.email,
+        full_name: decoded.full_name || undefined,
         role: normalizeRole(decoded.role),
         status: UserStatus.ACTIVE,
       };

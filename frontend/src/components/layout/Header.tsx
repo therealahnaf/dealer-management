@@ -94,10 +94,14 @@ const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
 
-  const initials = useMemo(() => {
-    const name = user?.full_name || user?.email || "";
-    const parts = name.split(/[\s@._-]+/).filter(Boolean);
-    return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "U";
+  const displayName = useMemo(() => {
+    if (user?.full_name) {
+      return user.full_name;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return "User";
   }, [user]);
 
   const [scrolled, setScrolled] = useState(false);
@@ -114,7 +118,7 @@ const Header: React.FC = () => {
   return (
     <header
       className={cx(
-        "sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-brand-light-orange/70 dark:supports-[backdrop-filter]:bg-brand-light-orange/70",
+        "sticky top-0 z-40 backdrop-blur-md bg-white/20 dark:bg-white/10",
         scrolled ? "shadow-md border-b border-brand-orange/20 dark:border-brand-orange/20" : "border-b border-transparent"
       )}
     >
@@ -152,27 +156,13 @@ const Header: React.FC = () => {
             {user ? (
               <Dropdown
                 label="User menu"
-                trigger={<span className="">{initials}</span>}
+                trigger={<span className="text-sm font-medium">{displayName}</span>}
               >
                 <div className="px-3 py-2">
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.full_name || user.email}</p>
                   <p className="text-xs text-gray-500">Signed in</p>
                 </div>
                 <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />
-                <ul className="text-sm">
-                  <li>
-                    <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <User className="h-4 w-4 text-gray-400" />
-                      <span>My Account</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/orders" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
-                      <span>Orders</span>
-                    </Link>
-                  </li>
-                </ul>
                 <div className="p-2">
                   <Button
                     variant="outline"
