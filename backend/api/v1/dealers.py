@@ -56,7 +56,7 @@ def admin_create_dealer(
     }
     
     dealer_info = DealerCreate(
-        customer_code=dealer_data.customer_code,
+        customer_code="",  # Will be auto-generated in service
         company_name=dealer_data.company_name,
         contact_person=dealer_data.contact_person,
         contact_number=dealer_data.contact_number,

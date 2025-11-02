@@ -129,7 +129,7 @@ const AdminDealersPage: React.FC = () => {
                           <h3 className="text-lg font-bold text-brand-brown">{dealer.company_name}</h3>
                           <p className="text-sm text-brand-gray-orange/70 mt-1">Code: {dealer.customer_code}</p>
                         </div>
-                        <div className="bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                           Active
                         </div>
                       </div>

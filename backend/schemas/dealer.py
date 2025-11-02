@@ -50,8 +50,7 @@ class DealerWithUserCreate(BaseModel):
     password: str
     full_name: str
     contact_number: Optional[str] = Field(default=None, max_length=20)
-    # Dealer fields
-    customer_code: str = Field(..., max_length=50)
+    # Dealer fields (customer_code is auto-generated)
     company_name: str = Field(..., max_length=255)
     contact_person: Optional[str] = Field(default=None, max_length=255)
     billing_address: Optional[str] = None

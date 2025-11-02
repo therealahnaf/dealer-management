@@ -19,7 +19,6 @@ const CreateDealerForm: React.FC<CreateDealerFormProps> = ({ onSubmit, onCancel,
     full_name: '',
     contact_number: '',
     // Dealer fields
-    customer_code: '',
     company_name: '',
     contact_person: '',
     billing_address: '',
@@ -58,8 +57,8 @@ const CreateDealerForm: React.FC<CreateDealerFormProps> = ({ onSubmit, onCancel,
       return;
     }
 
-    if (!formData.customer_code || !formData.company_name) {
-      setError('Customer code and company name are required');
+    if (!formData.company_name) {
+      setError('Company name is required');
       return;
     }
 
@@ -69,7 +68,6 @@ const CreateDealerForm: React.FC<CreateDealerFormProps> = ({ onSubmit, onCancel,
         password: formData.password,
         full_name: formData.full_name,
         contact_number: formData.contact_number || undefined,
-        customer_code: formData.customer_code,
         company_name: formData.company_name,
         contact_person: formData.contact_person || undefined,
         billing_address: formData.billing_address || undefined,
@@ -82,7 +80,6 @@ const CreateDealerForm: React.FC<CreateDealerFormProps> = ({ onSubmit, onCancel,
         confirmPassword: '',
         full_name: '',
         contact_number: '',
-        customer_code: '',
         company_name: '',
         contact_person: '',
         billing_address: '',
@@ -191,18 +188,6 @@ const CreateDealerForm: React.FC<CreateDealerFormProps> = ({ onSubmit, onCancel,
               Dealer Information
             </h3>
             <div className="space-y-4 bg-brand-light-orange p-4 rounded-lg">
-              <div className="relative group">
-                <Input
-                  type="text"
-                  name="customer_code"
-                  label="Customer Code"
-                  value={formData.customer_code}
-                  onChange={handleChange}
-                  required
-                  placeholder="CUST-001"
-                />
-              </div>
-
               <div className="relative group">
                 <Building2 className="absolute left-3 top-[38px] h-5 w-5 text-gray-400 group-focus-within:text-gray-600 transition-colors duration-200 z-10" />
                 <Input

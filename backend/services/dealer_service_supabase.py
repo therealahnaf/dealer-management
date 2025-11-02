@@ -86,10 +86,9 @@ class DealerServiceSB:
         if existing.data:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Check if customer_code already exists
-        existing_dealer = supabase.table("dealers").select("dealer_id").eq("customer_code", dealer_data.customer_code).execute()
-        if existing_dealer.data:
-            raise HTTPException(status_code=400, detail="Customer code already exists")
+        # Generate customer_code based on dealer count
+        all_dealers = supabase.table("dealers").select("*", count="exact").execute()
+        next_customer_code = str((all_dealers.count or 0) + 1)
         
         try:
             # Create user
@@ -110,7 +109,7 @@ class DealerServiceSB:
             
             # Create dealer linked to user
             dealer_payload = {
-                "customer_code": dealer_data.customer_code,
+                "customer_code": next_customer_code,
                 "company_name": dealer_data.company_name,
                 "contact_person": dealer_data.contact_person,
                 "contact_number": dealer_data.contact_number,

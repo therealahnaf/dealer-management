@@ -63,7 +63,14 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         await dealerApi.post('/dealers/', formData);
         setSuccess('Dealer profile created successfully!');
       } else {
-        const updateData: DealerUpdate = { ...formData };
+        // Don't include customer_code in update (it's immutable)
+        const updateData: DealerUpdate = { 
+          company_name: formData.company_name,
+          contact_person: formData.contact_person,
+          contact_number: formData.contact_number,
+          billing_address: formData.billing_address,
+          shipping_address: formData.shipping_address,
+        };
         await dealerApi.put('/dealers/my-profile', updateData);
         setSuccess('Dealer profile updated successfully!');
       }
@@ -121,9 +128,10 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
               label="Customer Code *"
               value={formData.customer_code}
               onChange={handleChange}
+              disabled={mode === 'edit'}
               required
               placeholder="Enter customer code"
-              helperText="Unique identifier for your business"
+              helperText={mode === 'edit' ? 'Auto-assigned and cannot be changed' : 'Unique identifier for your business'}
             />
             <Input
               type="text"
