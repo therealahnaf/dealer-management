@@ -48,7 +48,7 @@ VAT_PERCENT = Decimal("15.00")
 class PurchaseOrderServiceSB:
     @staticmethod
     def _format_po_number(dealer_id: str, sequence_num: int) -> str:
-        return f"PO-{dealer_id}-{sequence_num:06d}"
+        return f"PO-{sequence_num:06d}"
 
     @staticmethod
     def create_purchase_order(order_in, user_id: str):
@@ -58,9 +58,20 @@ class PurchaseOrderServiceSB:
         if not d.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dealer not found or access denied.")
 
-        # 2) Create placeholder PO to get po_id
+        # 2) Generate po_number BEFORE creating the PO to avoid race conditions
+        # Get the maximum sequence number for this dealer by counting all POs for this dealer
+        existing_pos = supabase.table("purchase_orders").select("*", count="exact") \
+            .eq("dealer_id", str(order_in.dealer_id)) \
+            .execute()
+        
+        # Next sequence number is count + 1 (since sequences start at 1)
+        sequence_num = (existing_pos.count or 0) + 1
+        
+        po_number = PurchaseOrderServiceSB._format_po_number(str(order_in.dealer_id), sequence_num)
+
+        # 3) Create PO with generated po_number
         po_payload = {
-            "po_number": "PENDING",
+            "po_number": po_number,
             "dealer_id": str(order_in.dealer_id),
             "created_by_user": str(user_id),
             "external_ref_code": order_in.external_ref_code,
@@ -76,28 +87,6 @@ class PurchaseOrderServiceSB:
             raise HTTPException(status_code=500, detail="Failed to create purchase order")
         po = po_res.data[0]
         po_id = po["po_id"]
-
-        # 3) Generate final po_number (dealer-specific sequence) and update
-        # Get the maximum sequence number for this dealer
-        existing_pos = supabase.table("purchase_orders").select("po_number") \
-            .eq("dealer_id", str(order_in.dealer_id)) \
-            .order("po_id", desc=True) \
-            .limit(1) \
-            .execute()
-        
-        sequence_num = 1
-        if existing_pos.data and existing_pos.data[0].get("po_number"):
-            # Extract sequence number from existing PO number (format: PO-{dealer_id}-{sequence})
-            try:
-                po_num_str = existing_pos.data[0]["po_number"]
-                parts = po_num_str.split("-")
-                if len(parts) >= 3:
-                    sequence_num = int(parts[-1]) + 1
-            except (ValueError, IndexError):
-                sequence_num = 1
-        
-        final_po_number = PurchaseOrderServiceSB._format_po_number(str(order_in.dealer_id), sequence_num)
-        supabase.table("purchase_orders").update({"po_number": final_po_number}).eq("po_id", po_id).execute()
 
         # 4) Insert items and compute totals
         total_ex_vat = Decimal("0.00")

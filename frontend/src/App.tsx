@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RequireAuth, AllowRoles, PublicOnly } from './components/RouteGuards';
 import { homeForRole } from './roles';
+import Loader from './components/ui/Loader';
 
 // Pages (adjust import paths/names if needed)
 import LoginPage from './pages/auth/LoginPage';
@@ -24,7 +25,7 @@ import { useAuth } from './contexts/AuthContext';
 
 export default function App() {
   const { loading } = useAuth();
-  if (loading) return <Loader />;
+  if (loading) return <Loader message="Signing in..." fullScreen />;
   return (
     <BrowserRouter>
       <Routes>
@@ -70,20 +71,16 @@ export default function App() {
   );
 }
 
-function Loader() {
-  return <div style={{ padding: 24, textAlign: 'center' }}>Loading…</div>;
-}
-
 function Autoland() {
   const { user, loading } = useAuth();
-  if (loading) return <Loader />;
+  if (loading) return <Loader message="Loading..." fullScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={homeForRole(user.role)} replace />;
 }
 
 function UnknownRouteFallback() {
   const { user, loading } = useAuth();
-  if (loading) return <Loader />;
+  if (loading) return <Loader message="Loading..." fullScreen />;
   if (user) return <Navigate to={homeForRole(user.role)} replace />;
   return <Navigate to="/login" replace />;
 }
