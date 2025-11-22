@@ -6,9 +6,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from core.config import settings
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Create database engine
 engine = create_engine(
@@ -35,6 +32,7 @@ def get_db():
     finally:
         db.close()
 
+
 """
 Database client initialization using application settings.
 """
@@ -42,12 +40,30 @@ from supabase import create_client, Client
 
 from .config import settings
 
+# Lazy-loaded Supabase client
+_supabase_client: Client | None = None
+
 
 def _create_supabase_client() -> Client:
     if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
         raise RuntimeError("Supabase configuration missing: SUPABASE_URL and SUPABASE_KEY must be set")
+
+    print(settings.SUPABASE_KEY)
     return create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 
-# Shared Supabase client
-supabase: Client = _create_supabase_client()
+def get_supabase() -> Client:
+    """Get or create the Supabase client (lazy initialization)."""
+    global _supabase_client
+    if _supabase_client is None:
+        _supabase_client = _create_supabase_client()
+    return _supabase_client
+
+
+# For backward compatibility, create a property-like access
+class _SupabaseProxy:
+    def __getattr__(self, name):
+        return getattr(get_supabase(), name)
+
+
+supabase = _SupabaseProxy()

@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  backend:
+    container_name: dealer-management-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    container_name: dealer-management-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  tunnel-backend:
+    image: cloudflare/cloudflared:latest
+    container_name: dealer-management-tunnel-backend
+    restart: unless-stopped
+    command: tunnel --protocol http2 --no-autoupdate run --token ${BACKEND_CF_TOKEN}
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  tunnel-frontend:
+    image: cloudflare/cloudflared:latest
+    container_name: dealer-management-tunnel-frontend
+    restart: unless-stopped
+    command: tunnel --protocol http2 --no-autoupdate run --token ${FRONTEND_CF_TOKEN}
+    networks:
+      - app-network
+    depends_on:
+      - frontend
+
+volumes:
+  redis_data:
+
+networks:
+  app-network:

@@ -3,6 +3,10 @@ Application configuration settings.
 """
 from pydantic_settings import BaseSettings
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file before creating Settings
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -19,6 +23,10 @@ class Settings(BaseSettings):
     # Supabase
     SUPABASE_URL: str | None = os.getenv("SUPABASE_URL")
     SUPABASE_KEY: str | None = os.getenv("SUPABASE_KEY")
+    
+    # Supabase S3 Credentials
+    S3_ACCESS_KEY_ID: str | None = os.getenv("S3_ACCESS_KEY_ID")
+    S3_SECRET_ACCESS_KEY: str | None = os.getenv("S3_SECRET_ACCESS_KEY")
     
     # JWT Settings
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"

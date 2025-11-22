@@ -55,7 +55,12 @@ def login_user(user_data: UserLogin):
 
     # Create access token
     access_token = create_access_token(
-        data={"sub": str(user["user_id"]), "role": user["role"]}
+        data={
+            "sub": str(user["user_id"]),
+            "role": user["role"],
+            "email": user.get("email", ""),
+            "full_name": user.get("full_name", "")
+        }
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

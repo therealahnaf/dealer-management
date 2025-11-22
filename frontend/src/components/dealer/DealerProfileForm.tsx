@@ -63,7 +63,14 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         await dealerApi.post('/dealers/', formData);
         setSuccess('Dealer profile created successfully!');
       } else {
-        const updateData: DealerUpdate = { ...formData };
+        // Don't include customer_code in update (it's immutable)
+        const updateData: DealerUpdate = { 
+          company_name: formData.company_name,
+          contact_person: formData.contact_person,
+          contact_number: formData.contact_number,
+          billing_address: formData.billing_address,
+          shipping_address: formData.shipping_address,
+        };
         await dealerApi.put('/dealers/my-profile', updateData);
         setSuccess('Dealer profile updated successfully!');
       }
@@ -83,18 +90,17 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
   };
 
   return (
-    <Card>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {mode === 'create' ? 'Create Dealer Profile' : 'Edit Dealer Profile'}
-        </h2>
-        <p className="text-gray-600">
-          {mode === 'create' 
-            ? 'Set up your dealer profile to start placing orders'
-            : 'Update your dealer profile information'
-          }
-        </p>
-      </div>
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8">
+        {/* Minimal Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-brand-orange" />
+            <h1 className="text-2xl font-bold text-brand-brown">Dealer Profile</h1>
+          </div>
+        </div>
+
+        <Card>
 
       {error && (
         <Alert type="error" className="mb-6">
@@ -111,8 +117,8 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Company Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Building2 className="h-5 w-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+            <Building2 className="h-5 w-5 mr-2 text-gray-600" />
             Company Information
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -122,9 +128,10 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
               label="Customer Code *"
               value={formData.customer_code}
               onChange={handleChange}
+              disabled={mode === 'edit'}
               required
               placeholder="Enter customer code"
-              helperText="Unique identifier for your business"
+              helperText={mode === 'edit' ? 'Auto-assigned and cannot be changed' : 'Unique identifier for your business'}
             />
             <Input
               type="text"
@@ -140,8 +147,8 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
 
         {/* Contact Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+            <User className="h-5 w-5 mr-2 text-gray-600" />
             Contact Information
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,8 +177,8 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
 
         {/* Address Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+            <MapPin className="h-5 w-5 mr-2 text-gray-600" />
             Address Information
           </h3>
           <div className="space-y-6">
@@ -184,7 +191,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
                 value={formData.billing_address}
                 onChange={handleChange}
                 rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
                 placeholder="Enter billing address"
               />
             </div>
@@ -209,14 +216,14 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
                 value={formData.shipping_address}
                 onChange={handleChange}
                 rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
                 placeholder="Enter shipping address"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4 pt-6 border-t">
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
           <Button
             type="button"
             variant="outline"
@@ -233,6 +240,8 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         </div>
       </form>
     </Card>
+      </div>
+    </div>
   );
 };
 

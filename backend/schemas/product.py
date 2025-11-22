@@ -12,15 +12,15 @@ from models.product import ProductStatus
 
 class ProductBase(BaseModel):
     """Base schema for product with common fields."""
-    sku_code: str = Field(..., max_length=100)
     name: str = Field(..., max_length=255)
     pack_size: Optional[str] = Field(None, max_length=50)
-    product_list_tag: Optional[str] = Field(None, max_length=100)
-    mrp: float = Field(..., gt=0, description="Maximum Retail Price")
     trade_price_incl_vat: float = Field(..., gt=0, description="Trade price including VAT")
-    retailer_profit: float = Field(0.0, ge=0, description="Retailer profit amount")
-    stock_qty: int = Field(0, ge=0, description="Current stock quantity")
+    stock_qty: Optional[int] = Field(0, ge=0, description="Current stock quantity")
     status: ProductStatus = Field(default=ProductStatus.ACTIVE)
+    image: Optional[str] = Field(None, description="Product image URL")
+    vat: Optional[float] = Field(None, description="VAT percentage")
+    mrp: Optional[float] = Field(None, description="Maximum Retail Price")
+    tp: Optional[float] = Field(None, description="Trade Price")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -32,15 +32,15 @@ class ProductCreate(ProductBase):
 
 class ProductUpdate(BaseModel):
     """Schema for updating an existing product."""
-    sku_code: Optional[str] = Field(None, max_length=100)
     name: Optional[str] = Field(None, max_length=255)
     pack_size: Optional[str] = Field(None, max_length=50)
-    product_list_tag: Optional[str] = Field(None, max_length=100)
-    mrp: Optional[float] = Field(None, gt=0, description="Maximum Retail Price")
     trade_price_incl_vat: Optional[float] = Field(None, gt=0, description="Trade price including VAT")
-    retailer_profit: Optional[float] = Field(None, ge=0, description="Retailer profit amount")
     stock_qty: Optional[int] = Field(None, ge=0, description="Current stock quantity")
     status: Optional[ProductStatus] = None
+    image: Optional[str] = Field(None, description="Product image URL")
+    vat: Optional[float] = Field(None, description="VAT percentage")
+    mrp: Optional[float] = Field(None, description="Maximum Retail Price")
+    tp: Optional[float] = Field(None, description="Trade Price")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -66,7 +66,7 @@ class ProductList(BaseModel):
 
 class ProductSearch(BaseModel):
     """Schema for product search parameters."""
-    query: str = Field(..., description="Search term for product name or SKU")
+    query: str = Field(..., description="Search term for product name")
     skip: int = Field(0, ge=0, description="Number of items to skip")
     limit: int = Field(100, ge=1, le=1000, description="Maximum number of items to return")
 

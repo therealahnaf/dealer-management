@@ -2,33 +2,36 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RequireAuth, AllowRoles, PublicOnly } from './components/RouteGuards';
 import { homeForRole } from './roles';
+import Loader from './components/ui/Loader';
 
 // Pages (adjust import paths/names if needed)
 import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderDetailPage from './pages/PurchaseOrderDetailPage';
+import InvoicesPage from './pages/InvoicesPage';
 import DealerPage from './pages/DealerPage';
-// import InvoicesPage from './pages/InvoicesPage';
 
 import DashboardPage from './pages/DashboardPage';
+import AdminPurchaseOrdersPage from './pages/AdminPurchaseOrdersPage';
+import AdminPurchaseOrderDetailPage from './pages/AdminPurchaseOrderDetailPage';
+import AdminDealersPage from './pages/AdminDealersPage';
+import AdminSettingsPage from './pages/AdminSettingsPage';
 import { useAuth } from './contexts/AuthContext';
 // ...any other admin pages
 
 export default function App() {
-  const { user, loading } = useAuth();
-  if (loading) return <Loader />;
+  const { loading } = useAuth();
+  if (loading) return <Loader message="Signing in..." fullScreen />;
   return (
     <BrowserRouter>
       <Routes>
         {/* ---------- PUBLIC (auth) ---------- */}
         <Route element={<PublicOnly />}>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
@@ -40,15 +43,17 @@ export default function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
+            <Route path="/invoices" element={<InvoicesPage />} />
             <Route path="/dealer" element={<DealerPage />} />
-            {/* <Route path="/invoices" element={<InvoicesPage />} /> */}
           </Route>
 
           {/* Admin-only: ALL other app pages go here */}
           <Route element={<AllowRoles roles={['admin']} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            {/* Add every other route that should be admin-only */}
-            {/* <Route path="/admin/something" element={<Something />} /> */}
+            <Route path="/admin/purchase-orders" element={<AdminPurchaseOrdersPage />} />
+            <Route path="/admin/purchase-orders/:dealerId/:poId" element={<AdminPurchaseOrderDetailPage />} />
+            <Route path="/admin/dealers" element={<AdminDealersPage />} />
+            <Route path="/admin/settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
 
@@ -66,20 +71,16 @@ export default function App() {
   );
 }
 
-function Loader() {
-  return <div style={{ padding: 24, textAlign: 'center' }}>Loading…</div>;
-}
-
 function Autoland() {
   const { user, loading } = useAuth();
-  if (loading) return <Loader />;
+  if (loading) return <Loader message="Loading..." fullScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={homeForRole(user.role)} replace />;
 }
 
 function UnknownRouteFallback() {
   const { user, loading } = useAuth();
-  if (loading) return <Loader />;
+  if (loading) return <Loader message="Loading..." fullScreen />;
   if (user) return <Navigate to={homeForRole(user.role)} replace />;
   return <Navigate to="/login" replace />;
 }

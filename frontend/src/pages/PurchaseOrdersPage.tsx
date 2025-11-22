@@ -1,21 +1,29 @@
-// frontend/src/pages/PurchaseOrdersPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FileText, Plus } from 'lucide-react';
 import { getMyPurchaseOrders } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
+import Loader from '../components/ui/Loader';
+import OrdersTable from '../components/tables/OrdersTable';
 
 const PurchaseOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [pageSize] = useState(20);
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       try {
-        const data = await getMyPurchaseOrders();
-        setOrders(data);
+        const skip = (currentPage - 1) * pageSize;
+        const data = await getMyPurchaseOrders(skip, pageSize);
+        setOrders(data.items);
+        setTotalOrders(data.total);
       } catch (err) {
         setError('Failed to fetch purchase orders');
       }
@@ -23,64 +31,85 @@ const PurchaseOrdersPage: React.FC = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [currentPage, pageSize]);
 
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">My Purchase Orders</h1>
-          <Link to="/cart" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            Create New Purchase Order
-          </Link>
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {loading ? (
+            <Loader message="Loading Purchase Orders..." />
+          ) : error ? (
+            <div className="max-w-2xl mx-auto">
+              <Alert type="error" className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6">
+                {error}
+              </Alert>
+            </div>
+          ) : orders.length > 0 ? (
+            <div className="max-w-6xl mx-auto">
+              {/* Minimal Header with Button */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-brand-orange" />
+                  <h1 className="text-2xl font-bold text-brand-brown">Purchase Orders</h1>
+                </div>
+                <Link
+                  to="/cart"
+                  className="flex items-center gap-2 bg-brand-orange hover:bg-brand-gray-orange text-white px-4 py-2 rounded-lg transition-colors font-semibold text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Order
+                </Link>
+              </div>
+
+              <OrdersTable orders={orders} />
+
+              {/* Pagination */}
+              <div className="mt-8 flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    Page <span className="font-semibold">{currentPage}</span> of{' '}
+                    <span className="font-semibold">{Math.ceil(totalOrders / pageSize)}</span>
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= Math.ceil(totalOrders / pageSize)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-2xl mx-auto text-center py-20">
+              <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-100">
+                <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Purchase Orders Yet</h3>
+                <p className="text-gray-500 mb-6">Start by creating your first purchase order to see your order history here.</p>
+                <Link
+                  to="/cart"
+                  className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Your First Order
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
-
-        {error && <Alert type="error">{error}</Alert>}
-
-        {loading ? (
-          <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading orders...</p>
-          </div>
-        ) : orders.length > 0 ? (
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">View</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map(order => (
-                  <tr key={order.po_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.po_number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.po_date).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${order.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{order.total_inc_vat.toFixed(2)} tk</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link to={`/purchase-orders/${order.po_id}`} className="text-blue-600 hover:text-blue-900">View</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-10 bg-white rounded-lg shadow-md">
-            <p className="text-gray-600">You haven't placed any orders yet.</p>
-          </div>
-        )}
       </div>
     </Layout>
   );
