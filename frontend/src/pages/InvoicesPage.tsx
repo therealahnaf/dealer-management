@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Plus, ShoppingCart } from 'lucide-react';
-import { getApprovedPurchaseOrders } from '../services/purchaseOrderService';
+import { getApprovedPurchaseOrders, downloadInvoice } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
@@ -37,19 +37,24 @@ const InvoicesPage: React.FC = () => {
   const handleDownloadInvoice = async (orderId: number, poNumber: string) => {
     setDownloadingInvoices(prev => ({ ...prev, [orderId]: true }));
     try {
-      // Simulate invoice download - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Create a dummy PDF download
+      const { blob, contentType } = await downloadInvoice(orderId);
+      
+      // Determine file extension based on content type
+      const fileExtension = contentType.includes('pdf') ? 'pdf' : 'docx';
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob);
       const element = document.createElement('a');
-      element.setAttribute('href', 'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVGl0bGUgKEludm9pY2UpCj4+CmVuZG9iagp4cmVmCjAgMQowMDAwMDAwMDAwIDY1NTM1IGYgCnRyYWlsZXIKPDwKL1NpemUgMQovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMTMwCiUlRU9G');
-      element.setAttribute('download', `invoice-${poNumber}.pdf`);
+      element.setAttribute('href', url);
+      element.setAttribute('download', `invoice-${poNumber}.${fileExtension}`);
       element.style.display = 'none';
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading invoice:', error);
+      setError('Failed to download invoice');
     } finally {
       setDownloadingInvoices(prev => ({ ...prev, [orderId]: false }));
     }

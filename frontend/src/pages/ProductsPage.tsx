@@ -7,6 +7,7 @@ import useDebounce from '../hooks/useDebounce';
 import { useCart } from '../contexts/CartContext';
 import Loader from '../components/ui/Loader';
 import { Search, ShoppingCart, Package, Grid, List } from 'lucide-react';
+import { getProductImageUrl } from '../utils/imageUtils';
 
 interface ProductListResponse {
   items: ProductRead[];
@@ -67,7 +68,7 @@ const ProductsPage: React.FC = () => {
         product_id: product.product_id,
         name: product.name,
         quantity: quantity,
-        unit_price: product.mrp,
+        unit_price: product.mrp || product.trade_price_incl_vat,
       });
       // Show success feedback
       setQuantities(prev => ({ ...prev, [product.product_id]: 1 }));
@@ -78,16 +79,32 @@ const ProductsPage: React.FC = () => {
   const processedProducts = products
     .sort((a, b) => {
       if (sortBy === 'price') {
-        return a.mrp - b.mrp;
+        const priceA = a.mrp || a.trade_price_incl_vat;
+        const priceB = b.mrp || b.trade_price_incl_vat;
+        return priceA - priceB;
       }
       return a.name.localeCompare(b.name);
     });
 
-  const ProductCard = ({ product }: { product: ProductRead }) => (
+  const ProductCard = ({ product }: { product: ProductRead }) => {
+    const imageUrl = getProductImageUrl(product.image);
+    const [imageError, setImageError] = useState(false);
+    const displayPrice = product.mrp || product.trade_price_incl_vat;
+
+    return (
     <div className="group bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden transition-all duration-300 border border-gray-100 flex flex-col h-full">
-      {/* Product Image Placeholder */}
-      <div className="relative bg-brand-light-orange h-32 flex items-center justify-center overflow-hidden">
-        <Package className="w-12 h-12 text-brand-brown group-hover:scale-110 transition-transform duration-300" />
+      {/* Product Image */}
+      <div className="relative bg-brand-light-orange h-48 flex items-center justify-center overflow-hidden p-4">
+        {imageUrl && !imageError ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            onError={() => setImageError(true)}
+            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <Package className="w-16 h-16 text-brand-brown group-hover:scale-110 transition-transform duration-300" />
+        )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-600">
           In Stock
         </div>
@@ -109,7 +126,7 @@ const ProductsPage: React.FC = () => {
         {/* Price and Add to Cart Section - Sticky at Bottom */}
         <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
+            <span className="text-lg font-bold text-gray-600">{displayPrice.toFixed(2)} ৳</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
@@ -143,14 +160,29 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
-  const ProductListItem = ({ product }: { product: ProductRead }) => (
+  const ProductListItem = ({ product }: { product: ProductRead }) => {
+    const imageUrl = getProductImageUrl(product.image);
+    const [imageError, setImageError] = useState(false);
+    const displayPrice = product.mrp || product.trade_price_incl_vat;
+
+    return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-100">
       <div className="flex items-center gap-6">
         {/* Product Image */}
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Package className="w-8 h-8 text-gray-600" />
+        <div className="w-32 h-32 bg-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden p-3">
+          {imageUrl && !imageError ? (
+            <img
+              src={imageUrl}
+              alt={product.name}
+              onError={() => setImageError(true)}
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <Package className="w-12 h-12 text-brand-brown" />
+          )}
         </div>
 
         {/* Product Info */}
@@ -160,7 +192,7 @@ const ProductsPage: React.FC = () => {
           </h3>
           <p className="text-sm text-gray-500 mb-2">{product.pack_size}</p>
           <div className="flex items-center gap-4">
-            <span className="text-xl font-bold text-gray-600">{product.mrp.toFixed(2)} ৳</span>
+            <span className="text-xl font-bold text-gray-600">{displayPrice.toFixed(2)} ৳</span>
           </div>
         </div>
 
@@ -197,7 +229,8 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <Layout>

@@ -26,11 +26,26 @@ def _with_required_fields(order: dict) -> dict:
         else:
             product_map = {}
 
-        # inject nested product
+        # inject nested product and calculate line totals
         for it in items:
-            it["product"] = product_map.get(it.get("product_id"))
+            product = product_map.get(it.get("product_id"))
+            it["product"] = product
+            # Calculate unit_price and total_price from product data
+            if product:
+                unit_price = Decimal(str(product.get("trade_price_incl_vat", "0")))
+                it["unit_price"] = float(unit_price)
+                it["total_price"] = float(unit_price * Decimal(it.get("quantity", 0)))
+                it["pack_size_snapshot"] = product.get("pack_size")
 
-    # 3) created_at / updated_at (your table doesn’t have these; synthesize)
+    # 3) Calculate totals from items
+    total_tp = Decimal("0.00")
+    for it in items:
+        total_tp += Decimal(str(it.get("total_price", 0)))
+    
+    total_vat = (total_tp * VAT_PERCENT / Decimal("100")).quantize(Decimal("0.01"))
+    total_inc_vat = (total_tp + total_vat).quantize(Decimal("0.01"))
+
+    # 4) created_at / updated_at (your table doesn't have these; synthesize)
     now_iso = datetime.now(timezone.utc).isoformat()
     created_at = order.get("created_at") or now_iso
     updated_at = order.get("updated_at") or created_at
@@ -41,6 +56,11 @@ def _with_required_fields(order: dict) -> dict:
         "items": items,
         "created_at": created_at,
         "updated_at": updated_at,
+        "total_ex_vat": float(total_tp),
+        "total_vat": float(total_vat),
+        "total_inc_vat": float(total_inc_vat),
+        "vat_percent": float(VAT_PERCENT),
+        "vat_amount": float(total_vat),
     }
 
 VAT_PERCENT = Decimal("15.00")
@@ -51,36 +71,32 @@ class PurchaseOrderServiceSB:
         return f"PO-{sequence_num:06d}"
 
     @staticmethod
-    def create_purchase_order(order_in, user_id: str):
-        # 1) Validate dealer belongs to user
-        d = supabase.table("dealers").select("dealer_id,user_id") \
-            .eq("dealer_id", str(order_in.dealer_id)).eq("user_id", str(user_id)).execute()
+    def create_purchase_order_as_admin(order_in, admin_user_id: str):
+        """
+        Create a purchase order as admin for a specific dealer.
+        The dealer_id must be specified in order_in.
+        """
+        # 1) Validate dealer exists (no user validation needed for admin)
+        d = supabase.table("dealers").select("dealer_id") \
+            .eq("dealer_id", str(order_in.dealer_id)).execute()
         if not d.data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dealer not found or access denied.")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dealer not found.")
 
         # 2) Generate po_number BEFORE creating the PO to avoid race conditions
-        # Get the maximum sequence number for this dealer by counting all POs for this dealer
         existing_pos = supabase.table("purchase_orders").select("*", count="exact") \
             .eq("dealer_id", str(order_in.dealer_id)) \
             .execute()
         
-        # Next sequence number is count + 1 (since sequences start at 1)
         sequence_num = (existing_pos.count or 0) + 1
-        
         po_number = PurchaseOrderServiceSB._format_po_number(str(order_in.dealer_id), sequence_num)
 
         # 3) Create PO with generated po_number
         po_payload = {
             "po_number": po_number,
             "dealer_id": str(order_in.dealer_id),
-            "created_by_user": str(user_id),
-            "external_ref_code": order_in.external_ref_code,
+            "created_by_user": str(admin_user_id),
             "po_date": datetime.now(timezone.utc).isoformat(),
             "status": "draft",
-            "total_ex_vat": "0.00",
-            "vat_percent": str(VAT_PERCENT),
-            "vat_amount": "0.00",
-            "total_inc_vat": "0.00",
         }
         po_res = supabase.table("purchase_orders").insert(po_payload).execute()
         if not po_res.data:
@@ -106,10 +122,7 @@ class PurchaseOrderServiceSB:
             items_payload.append({
                 "po_id": po_id,
                 "product_id": str(pr["product_id"]),
-                "pack_size_snapshot": pr.get("pack_size"),
                 "quantity": it.quantity,
-                "unit_price": str(unit_price),
-                "total_price": str(line_total),
             })
 
         if items_payload:
@@ -118,11 +131,82 @@ class PurchaseOrderServiceSB:
         vat_amount = (total_ex_vat * VAT_PERCENT / Decimal("100")).quantize(Decimal("0.01"))
         total_inc_vat = (total_ex_vat + vat_amount).quantize(Decimal("0.01"))
 
-        # 5) Update totals
         supabase.table("purchase_orders").update({
-            "total_ex_vat": str(total_ex_vat.quantize(Decimal("0.01"))),
-            "vat_amount": str(vat_amount),
-            "total_inc_vat": str(total_inc_vat),
+            "total_tp": str(total_ex_vat.quantize(Decimal("0.01"))),
+            "total_vat": str(vat_amount),
+        }).eq("po_id", po_id).execute()
+
+        # 6) Return final PO
+        out = supabase.table("purchase_orders").select("*").eq("po_id", po_id).execute()
+        order = out.data[0] if out.data else None
+        if not order:
+            raise HTTPException(status_code=500, detail="Purchase order not found after create")
+        return _with_required_fields(order)
+
+    @staticmethod
+    def create_purchase_order(order_in, user_id: str):
+        # 1) Validate dealer belongs to user
+        d = supabase.table("dealers").select("dealer_id,user_id") \
+            .eq("dealer_id", str(order_in.dealer_id)).eq("user_id", str(user_id)).execute()
+        if not d.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dealer not found or access denied.")
+
+        # 2) Generate po_number BEFORE creating the PO to avoid race conditions
+        # Get the maximum sequence number for this dealer by counting all POs for this dealer
+        existing_pos = supabase.table("purchase_orders").select("*", count="exact") \
+            .eq("dealer_id", str(order_in.dealer_id)) \
+            .execute()
+        
+        # Next sequence number is count + 1 (since sequences start at 1)
+        sequence_num = (existing_pos.count or 0) + 1
+        
+        po_number = PurchaseOrderServiceSB._format_po_number(str(order_in.dealer_id), sequence_num)
+
+        # 3) Create PO with generated po_number
+        po_payload = {
+            "po_number": po_number,
+            "dealer_id": str(order_in.dealer_id),
+            "created_by_user": str(user_id),
+            "po_date": datetime.now(timezone.utc).isoformat(),
+            "status": "draft",
+        }
+        po_res = supabase.table("purchase_orders").insert(po_payload).execute()
+        if not po_res.data:
+            raise HTTPException(status_code=500, detail="Failed to create purchase order")
+        po = po_res.data[0]
+        po_id = po["po_id"]
+
+        # 4) Insert items and compute totals
+        total_ex_vat = Decimal("0.00")
+        items_payload = []
+        for it in order_in.items:
+            # fetch product
+            p = supabase.table("products").select("product_id,trade_price_incl_vat,pack_size") \
+                .eq("product_id", str(it.product_id)).execute()
+            if not p.data:
+                raise HTTPException(status_code=404, detail=f"Product not found: {it.product_id}")
+
+            pr = p.data[0]
+            unit_price = Decimal(str(pr["trade_price_incl_vat"]))
+            line_total = unit_price * Decimal(it.quantity)
+            total_ex_vat += line_total
+
+            items_payload.append({
+                "po_id": po_id,
+                "product_id": str(pr["product_id"]),
+                "quantity": it.quantity,
+            })
+
+        if items_payload:
+            supabase.table("purchase_order_items").insert(items_payload).execute()
+
+        # 5) Calculate and store totals
+        vat_amount = (total_ex_vat * VAT_PERCENT / Decimal("100")).quantize(Decimal("0.01"))
+        total_inc_vat = (total_ex_vat + vat_amount).quantize(Decimal("0.01"))
+
+        supabase.table("purchase_orders").update({
+            "total_tp": str(total_ex_vat.quantize(Decimal("0.01"))),
+            "total_vat": str(vat_amount),
         }).eq("po_id", po_id).execute()
 
         # 6) Return final PO
@@ -239,23 +323,19 @@ class PurchaseOrderServiceSB:
             items_payload.append({
                 "po_id": po_id,
                 "product_id": str(pr["product_id"]),
-                "pack_size_snapshot": pr.get("pack_size"),
                 "quantity": it.quantity,
-                "unit_price": str(unit_price),
-                "total_price": str(line_total),
             })
 
         if items_payload:
             supabase.table("purchase_order_items").insert(items_payload).execute()
 
+        # Calculate and store totals
         vat_amount = (total_ex_vat * VAT_PERCENT / Decimal("100")).quantize(Decimal("0.01"))
         total_inc_vat = (total_ex_vat + vat_amount).quantize(Decimal("0.01"))
 
         supabase.table("purchase_orders").update({
-            "external_ref_code": order_update.external_ref_code,
-            "total_ex_vat": str(total_ex_vat.quantize(Decimal("0.01"))),
-            "vat_amount": str(vat_amount),
-            "total_inc_vat": str(total_inc_vat),
+            "total_tp": str(total_ex_vat.quantize(Decimal("0.01"))),
+            "total_vat": str(vat_amount),
         }).eq("po_id", po_id).execute()
 
         return PurchaseOrderServiceSB.get_purchase_order_details(po_id, user_id)

@@ -36,11 +36,8 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items }) => {
               <tr key={item.po_item_id} className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Package className="w-5 h-5 text-gray-600" />
-                    </div>
                     <div>
-                      <p className="font-semibold text-gray-900 leading-tight">
+                      <p className="text-sm font-semibold text-gray-900 leading-tight">
                         {item.product?.name || `Product ID: ${item.product_id}`}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">Item #{index + 1}</p>
@@ -53,15 +50,15 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items }) => {
                   </span>
                 </td>
                 <td className="py-4 px-6 text-right">
-                  <span className="font-semibold text-gray-900">${item.unit_price.toFixed(2)}</span>
+                  <span className="text-sm font-semibold text-gray-900">{item.unit_price.toFixed(2)} ৳</span>
                 </td>
                 <td className="py-4 px-6 text-center">
-                  <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
+                  <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
                     {item.quantity}
                   </span>
                 </td>
-                <td className="py-4 px-6 text-right">
-                  <span className="text-lg font-bold text-gray-600">${item.total_price.toFixed(2)}</span>
+                <td className="py-4 px-2 text-right">
+                  <span className="text-m font-bold text-gray-600">{item.total_price.toFixed(2)} ৳</span>
                 </td>
               </tr>
             ))}

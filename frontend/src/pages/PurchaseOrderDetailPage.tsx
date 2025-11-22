@@ -81,17 +81,22 @@ const PurchaseOrderDetailPage: React.FC = () => {
     
     setDownloadingInvoice(true);
     try {
-      // Simulate invoice download - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { downloadInvoice } = await import('../services/purchaseOrderService');
+      const { blob, contentType } = await downloadInvoice(order.po_id);
       
-      // Create a dummy PDF download
+      // Determine file extension based on content type
+      const fileExtension = contentType.includes('pdf') ? 'pdf' : 'docx';
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob);
       const element = document.createElement('a');
-      element.setAttribute('href', 'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVGl0bGUgKEludm9pY2UpCj4+CmVuZG9iagp4cmVmCjAgMQowMDAwMDAwMDAwIDY1NTM1IGYgCnRyYWlsZXIKPDwKL1NpemUgMQovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMTMwCiUlRU9G');
-      element.setAttribute('download', `invoice-${order.po_number}.pdf`);
+      element.setAttribute('href', url);
+      element.setAttribute('download', `invoice-${order.po_number}.${fileExtension}`);
       element.style.display = 'none';
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading invoice:', error);
     } finally {
@@ -165,18 +170,18 @@ const PurchaseOrderDetailPage: React.FC = () => {
                       <div className="space-y-4">
                         <div className="flex justify-between items-center py-2">
                           <span className="text-gray-600">Subtotal:</span>
-                          <span className="font-semibold">${order.total_ex_vat.toFixed(2)}</span>
+                          <span className="font-semibold">{order.total_ex_vat.toFixed(2)} ৳</span>
                         </div>
                         
                         <div className="flex justify-between items-center py-2">
                           <span className="text-gray-600">VAT ({order.vat_percent}%):</span>
-                          <span className="font-semibold">${order.vat_amount.toFixed(2)}</span>
+                          <span className="font-semibold">{order.vat_amount.toFixed(2)} ৳</span>
                         </div>
                         
                         <div className="border-t border-gray-200 pt-4">
                           <div className="flex justify-between items-center">
                             <span className="text-xl font-bold text-gray-900">Total:</span>
-                            <span className="text-2xl font-bold text-gray-600">${order.total_inc_vat.toFixed(2)}</span>
+                            <span className="text-xl font-bold text-gray-600">{order.total_inc_vat.toFixed(2)} ৳</span>
                           </div>
                         </div>
                         

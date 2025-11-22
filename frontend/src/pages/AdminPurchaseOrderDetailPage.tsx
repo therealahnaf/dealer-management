@@ -1,7 +1,7 @@
 // frontend/src/pages/AdminPurchaseOrderDetailPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getPurchaseOrderDetailsByDealerAndPoId, approvePurchaseOrder } from '../services/purchaseOrderService';
+import { getPurchaseOrderDetailsByDealerAndPoId, approvePurchaseOrder, downloadPO, downloadInvoice } from '../services/purchaseOrderService';
 import { PurchaseOrder } from '../types/purchaseOrder';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
@@ -11,7 +11,8 @@ import {
   CheckCircle,
   Receipt,
   Eye,
-  Check
+  Check,
+  Download
 } from 'lucide-react';
 import DealerInfoCard from '../components/dealer/DealerInfoCard';
 import OrderItemsTable from '../components/tables/OrderItemsTable';
@@ -23,6 +24,8 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [approving, setApproving] = useState<boolean>(false);
+  const [downloadingPO, setDownloadingPO] = useState<boolean>(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -56,6 +59,62 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
       setError('Failed to approve purchase order.');
     }
     setApproving(false);
+  };
+
+  const handleDownloadPO = async () => {
+    if (!poId || !order) return;
+    
+    setDownloadingPO(true);
+    try {
+      const { blob, contentType } = await downloadPO(parseInt(poId));
+      
+      // Determine file extension based on content type
+      const fileExtension = contentType.includes('pdf') ? 'pdf' : 'docx';
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const element = document.createElement('a');
+      element.setAttribute('href', url);
+      element.setAttribute('download', `PO-${order.po_number}.${fileExtension}`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading PO:', err);
+      setError('Failed to download PO');
+    } finally {
+      setDownloadingPO(false);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    if (!poId || !order) return;
+    
+    setDownloadingInvoice(true);
+    try {
+      const { blob, contentType } = await downloadInvoice(parseInt(poId));
+      
+      // Determine file extension based on content type
+      const fileExtension = contentType.includes('pdf') ? 'pdf' : 'docx';
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const element = document.createElement('a');
+      element.setAttribute('href', url);
+      element.setAttribute('download', `Invoice-${order.po_number}.${fileExtension}`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading invoice:', err);
+      setError('Failed to download invoice');
+    } finally {
+      setDownloadingInvoice(false);
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -98,16 +157,16 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                 {/* Left Column - Dealer Info & Summary */}
                 <div className="xl:col-span-1 space-y-6">
                   {/* Dealer Information */}
-                                    {order.status !== 'approved' && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center gap-3">
-                          <Check className="w-5 h-5 text-gray-600" />
-                          <h2 className="text-lg font-bold text-gray-800">Admin Actions</h2>
-                        </div>
+                                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <Check className="w-5 h-5 text-gray-600" />
+                        <h2 className="text-lg font-bold text-gray-800">Admin Actions</h2>
                       </div>
+                    </div>
 
-                      <div className="p-6">
+                    <div className="p-6 space-y-3">
+                      {order.status !== 'approved' && (
                         <button
                           onClick={handleApprove}
                           disabled={approving}
@@ -120,9 +179,35 @@ const AdminPurchaseOrderDetailPage: React.FC = () => {
                           )}
                           {approving ? 'Approving...' : 'Approve Order'}
                         </button>
-                      </div>
+                      )}
+                      <button
+                        onClick={handleDownloadPO}
+                        disabled={downloadingPO}
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-xl transition-colors font-semibold"
+                      >
+                        {downloadingPO ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                        {downloadingPO ? 'Generating...' : 'Download PO'}
+                      </button>
+                      {order.status === 'approved' && (
+                        <button
+                          onClick={handleDownloadInvoice}
+                          disabled={downloadingInvoice}
+                          className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-3 rounded-xl transition-colors font-semibold"
+                        >
+                          {downloadingInvoice ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Receipt className="w-4 h-4" />
+                          )}
+                          {downloadingInvoice ? 'Generating...' : 'Download Invoice'}
+                        </button>
+                      )}
                     </div>
-                  )}
+                  </div>
                   <DealerInfoCard dealer={order.dealer} />
 
                   {/* Order Summary */}

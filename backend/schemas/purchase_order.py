@@ -1,5 +1,5 @@
 # backend/schemas/purchase_order.py
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
@@ -16,40 +16,42 @@ class DocumentSchema(BaseModel):
 class ProductBase(BaseModel):
     product_id: uuid.UUID
     name: str
-    pack_size: str
+    pack_size: Optional[str] = None
     trade_price_incl_vat: float
-    mrp: float
+    mrp: Optional[float] = None
 
     class Config:
         orm_mode = True
+        populate_by_name = True
 
 class PurchaseOrderItemBase(BaseModel):
     product_id: uuid.UUID
     quantity: int = Field(..., gt=0)
-    unit_price: float = Field(..., gt=0)
 
 class PurchaseOrderItemCreate(PurchaseOrderItemBase):
     pass
 
-class PurchaseOrderItem(PurchaseOrderItemBase):
+class PurchaseOrderItem(BaseModel):
     po_item_id: int
     po_id: int
-    pack_size_snapshot: str
+    product_id: uuid.UUID
+    quantity: int
+    pack_size_snapshot: Optional[str] = None
+    unit_price: float
     total_price: float
-    product: ProductBase
+    product: Optional[ProductBase] = None
 
     class Config:
         orm_mode = True
 
 class PurchaseOrderBase(BaseModel):
-    external_ref_code: Optional[str] = None
+    pass
 
-class PurchaseOrderCreate(PurchaseOrderBase):
+class PurchaseOrderCreate(BaseModel):
     dealer_id: uuid.UUID
     items: List[PurchaseOrderItemCreate]
 
 class PurchaseOrderUpdate(BaseModel):
-    external_ref_code: Optional[str] = None
     items: List[PurchaseOrderItemCreate]
 
 class DealerBase(BaseModel):
@@ -64,38 +66,28 @@ class DealerBase(BaseModel):
     class Config:
         orm_mode = True
 
-class PurchaseOrder(PurchaseOrderBase):
+class PurchaseOrder(BaseModel):
     po_id: int
     po_number: str
     dealer_id: uuid.UUID
-    dealer: DealerBase
+    dealer: Optional[DealerBase] = None
     created_by_user: uuid.UUID
     po_date: datetime
     status: PurchaseOrderStatus
-    total_ex_vat: float
-    vat_percent: float
-    vat_amount: float
-    total_inc_vat: float
-    approved_at: Optional[datetime]
-    created_at: datetime
-    updated_at: Optional[datetime]
-    items: List[PurchaseOrderItem]
+    total_tp: Optional[float] = None
+    total_vat: Optional[float] = None
+    approved_at: Optional[datetime] = None
+    # Calculated fields (not in DB, computed from items)
+    total_ex_vat: Optional[float] = None
+    vat_percent: Optional[float] = None
+    vat_amount: Optional[float] = None
+    total_inc_vat: Optional[float] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    items: List[PurchaseOrderItem] = []
 
     class Config:
         orm_mode = True
-        
-        @classmethod
-        def from_orm(cls, obj):
-            # Ensure dealer is properly loaded
-            if hasattr(obj, 'dealer') and obj.dealer is None:
-                from sqlalchemy.orm import Session
-                from core.database import SessionLocal
-                db = SessionLocal()
-                try:
-                    obj.dealer = db.query(DealerModel).filter(DealerModel.dealer_id == obj.dealer_id).first()
-                finally:
-                    db.close()
-            return super().from_orm(obj)
 
 
 class PurchaseOrderList(BaseModel):

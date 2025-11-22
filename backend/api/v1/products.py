@@ -13,13 +13,13 @@ router = APIRouter()
 
 @router.get("/", response_model=ProductList)
 def list_active_products(
-    search: Optional[str] = Query(None, description="Search products by name or SKU"),
+    search: Optional[str] = Query(None, description="Search products by name"),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=1000),
 ):
     """
     List all active products with pagination.
-    Supports searching by name and SKU.
+    Supports searching by name.
     """
     products = ProductService.get_products(skip=skip, limit=limit, search=search)
     total = ProductService.get_products_count(search=search)
@@ -46,11 +46,11 @@ def get_product_details(product_id: UUID):
 
 
 @router.get("/search/", response_model=List[ProductRead])
-def search_products_by_name_or_sku(
-    q: str = Query(..., description="Search term for product name or SKU"),
+def search_products_by_name(
+    q: str = Query(..., description="Search term for product name"),
 ):
     """
-    Search for products by name or SKU.
+    Search for products by name.
     """
     if not q:
         raise HTTPException(

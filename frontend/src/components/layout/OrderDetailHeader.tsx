@@ -51,12 +51,12 @@ const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({ order, actionButt
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-brand-orange/20 overflow-hidden mb-8">
-      <div className="bg-brand-orange px-8 py-6 text-white">
+      <div className="bg-brand-orange px-8 py-2 text-white">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Hash className="w-6 h-6" />
-              <h1 className="text-3xl font-bold">Order {order.po_number}</h1>
+              <h1 className="text-xl font-bold">Order {order.po_number}</h1>
             </div>
             <div className="flex flex-wrap gap-4 text-gray-100">
               <div className="flex items-center gap-2">

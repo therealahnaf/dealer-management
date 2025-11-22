@@ -61,11 +61,14 @@ export interface DealerBase {
 
 export interface Dealer {
   dealer_id: string;
-  name: string;
-  address: string;
-  contact_person: string;
-  phone: string;
-  email: string;
+  customer_code: string;
+  company_name: string;
+  contact_person?: string;
+  contact_number?: string;
+  billing_address?: string;
+  shipping_address?: string;
+  user_id?: string;
+  user?: UserRead;
 }
 
 export enum UserRole {
@@ -89,15 +92,15 @@ export enum ProductStatus {
 
 export interface ProductRead {
   product_id: string;
-  sku_code: string;
   name: string;
   pack_size?: string;
-  product_list_tag?: string;
-  mrp: number;
   trade_price_incl_vat: number;
-  retailer_profit: number;
   stock_qty: number;
   status: ProductStatus;
+  image?: string;
+  vat?: number;
+  mrp?: number;
+  tp?: number;
   created_at: string; // Assuming ISO date string
   updated_at?: string; // Assuming ISO date string
 }

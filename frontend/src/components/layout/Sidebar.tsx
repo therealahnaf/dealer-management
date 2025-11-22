@@ -6,9 +6,9 @@ import {
   Package, 
   ShoppingCart, 
   FileText, 
-  CreditCard, 
+  //CreditCard, 
   Users, 
-  TrendingUp,
+  //TrendingUp,
   Settings,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,7 +18,6 @@ const adminNavigation = [
   { name: 'Dealers', href: '/admin/dealers', icon: Users },
   { name: 'Products', href: '/products', icon: Package },
   { name: 'All Purchase Orders', href: '/admin/purchase-orders', icon: ShoppingCart },
-  { name: 'Invoices', href: '/invoices', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

@@ -1,36 +1,59 @@
 import axios from 'axios';
 
+// Determine API base URL based on environment
+const getApiBaseUrl = (): string => {
+  // If we have an environment variable, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Otherwise, use the same origin as the frontend
+  // This handles both localhost and production domains
+  const protocol = window.location.protocol; // http: or https:
+  const host = window.location.host; // localhost:5173 or dealer.askgroup-bd.com
+  
+  // Replace frontend port with backend port if on localhost
+  if (host.includes('localhost')) {
+    return `${protocol}//localhost:8000/api/v1`;
+  }
+  
+  // For production, assume backend is on same domain
+  return `${protocol}//${host}/api/v1`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 // Create axios instances for different API endpoints
 export const authApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const dealerApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const productApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const purchaseOrderApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const settingsApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,46 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShoppingCart, Package, Receipt, ArrowLeft, Trash2, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Package, Receipt, ArrowLeft, Trash2, AlertCircle, Users } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { createPurchaseOrder } from '../services/purchaseOrderService';
-import { getMyDealerProfile } from '../services/dealerService';
+import { useAuth } from '../contexts/AuthContext';
+import { createPurchaseOrder, createPurchaseOrderAsAdmin } from '../services/purchaseOrderService';
+import { getMyDealerProfile, getAllDealers } from '../services/dealerService';
+import { Dealer } from '../types/api';
 import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
 import Loader from '../components/ui/Loader';
 
 const CartPage: React.FC = () => {
   const { cartItems, removeFromCart, clearCart, itemCount } = useCart();
+  const { user } = useAuth();
   const [dealerId, setDealerId] = useState<string | null>(null);
+  const [dealers, setDealers] = useState<Dealer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dealersLoading, setDealersLoading] = useState(false);
   const [error, setError] = useState('');
   const [profileError, setProfileError] = useState(false);
   const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    const fetchDealerProfile = async () => {
-      console.log('Attempting to fetch dealer profile...');
-      try {
-        const profile = await getMyDealerProfile();
-        console.log('Dealer profile fetched:', profile);
-        if (profile && profile.dealer_id) {
-          setDealerId(profile.dealer_id);
-        } else {
-          console.log('No dealer ID found in profile.');
-          setProfileError(true);
+    const fetchData = async () => {
+      if (isAdmin) {
+        // Admin: fetch all dealers
+        setDealersLoading(true);
+        try {
+          const allDealers = await getAllDealers();
+          setDealers(allDealers);
+          if (allDealers.length > 0) {
+            setDealerId(allDealers[0].dealer_id);
+          }
+        } catch (err: any) {
+          console.error('Error fetching dealers:', err);
+          setError('Could not fetch dealers.');
+        } finally {
+          setDealersLoading(false);
         }
-      } catch (err: any) {
-        console.error('Error fetching dealer profile:', err);
-        if (err.response && err.response.status === 404) {
-          console.log('Dealer profile not found (404).');
-          setProfileError(true);
-        } else {
-          setError('Could not fetch dealer profile.');
+      } else {
+        // Buyer: fetch their own dealer profile
+        console.log('Attempting to fetch dealer profile...');
+        try {
+          const profile = await getMyDealerProfile();
+          console.log('Dealer profile fetched:', profile);
+          if (profile && profile.dealer_id) {
+            setDealerId(profile.dealer_id);
+          } else {
+            console.log('No dealer ID found in profile.');
+            setProfileError(true);
+          }
+        } catch (err: any) {
+          console.error('Error fetching dealer profile:', err);
+          if (err.response && err.response.status === 404) {
+            console.log('Dealer profile not found (404).');
+            setProfileError(true);
+          } else {
+            setError('Could not fetch dealer profile.');
+          }
         }
       }
     };
 
-    fetchDealerProfile();
-  }, []);
+    fetchData();
+  }, [isAdmin]);
 
   const totalAmount = cartItems.reduce((total, item) => total + item.unit_price * item.quantity, 0);
 
@@ -58,12 +82,18 @@ const CartPage: React.FC = () => {
     setError('');
 
     try {
-      await createPurchaseOrder({
+      const orderData = {
         dealer_id: dealerId,
         items: cartItems.map(({ product_id, quantity, unit_price }) => ({ product_id, quantity, unit_price }))
-      });
+      };
+
+      if (isAdmin) {
+        await createPurchaseOrderAsAdmin(orderData);
+      } else {
+        await createPurchaseOrder(orderData);
+      }
       clearCart();
-      navigate('/purchase-orders'); // Redirect to the list of orders
+      navigate(isAdmin ? '/admin/purchase-orders' : '/purchase-orders'); // Redirect based on role
     } catch (err) {
       setError('Failed to create purchase order. Please try again.');
       console.error(err);
@@ -123,6 +153,44 @@ const CartPage: React.FC = () => {
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {/* Left Column - Order Summary */}
                 <div className="xl:col-span-1 space-y-6">
+                  {/* Dealer Selection (Admin Only) */}
+                  {isAdmin && (
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-brand-orange px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <Users className="w-5 h-5 text-white" />
+                          <h2 className="text-lg font-bold text-white">Select Dealer</h2>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        {dealersLoading ? (
+                          <div className="text-center py-4">
+                            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-brand-orange"></div>
+                            <p className="text-gray-600 text-sm mt-2">Loading dealers...</p>
+                          </div>
+                        ) : dealers.length > 0 ? (
+                          <select
+                            value={dealerId || ''}
+                            onChange={(e) => setDealerId(e.target.value)}
+                            className="w-full px-4 py-3 border border-brand-orange/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent bg-white text-gray-900 font-medium"
+                          >
+                            <option value="">-- Select a dealer --</option>
+                            {dealers.map((dealer) => (
+                              <option key={dealer.dealer_id} value={dealer.dealer_id}>
+                                {dealer.company_name} ({dealer.customer_code})
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                            <p className="text-yellow-700 text-sm">No dealers found in the system.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Order Summary */}
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -148,7 +216,7 @@ const CartPage: React.FC = () => {
                       </div>
 
                       <div className="mt-6 space-y-4">
-                        {profileError ? (
+                        {!isAdmin && profileError ? (
                           <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                             <div className="flex items-center gap-3 mb-3">
                               <AlertCircle className="w-5 h-5 text-red-600" />
@@ -166,7 +234,7 @@ const CartPage: React.FC = () => {
                           <button
                             onClick={handleSubmitOrder}
                             disabled={loading || !dealerId}
-                            className="w-full bg-gray-600 text-white py-3 rounded-xl hover:bg-gray-700 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                            className="w-full bg-brand-orange text-white py-3 rounded-xl hover:bg-brand-gray-orange transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                           >
                             {loading ? 'Submitting Order...' : 'Submit Order'}
                           </button>

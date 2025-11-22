@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from api.v1 import users, dealers, products, purchase_orders, settings
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 app = FastAPI(title="ASK Intl Dealer Management Platform", version="1.0")
 
+# Configure CORS
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,https://dealer.askgroup-bd.com").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # adjust in production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

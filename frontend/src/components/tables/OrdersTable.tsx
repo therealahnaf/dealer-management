@@ -148,9 +148,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                 {/* Total */}
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    <span className="text-lg font-bold text-gray-600">
-                      {order.total_inc_vat.toFixed(2)} tk
+                    <span className="text-m font-bold text-gray-600">
+                      {order.total_inc_vat.toFixed(2)} ৳
                     </span>
                   </div>
                 </td>
