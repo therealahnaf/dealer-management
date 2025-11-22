@@ -169,7 +169,8 @@ def download_invoice(
         logger.info(f"Invoice generation completed - DOCX: {docx_path}, PDF: {pdf_path}")
         
         # Return PDF if available, otherwise DOCX
-        file_to_return = pdf_path if pdf_path and pdf_path.exists() else docx_path
+        # file_to_return = pdf_path if pdf_path and pdf_path.exists() else docx_path
+        file_to_return = docx_path
         logger.info(f"File to return: {file_to_return}")
         
         if not file_to_return or not file_to_return.exists():
@@ -227,7 +228,8 @@ def download_po(
         logger.info(f"PO generation completed - DOCX: {docx_path}, PDF: {pdf_path}")
         
         # Return PDF if available, otherwise DOCX
-        file_to_return = pdf_path if pdf_path and pdf_path.exists() else docx_path
+        # file_to_return = pdf_path if pdf_path and pdf_path.exists() else docx_path
+        file_to_return = docx_path
         logger.info(f"File to return: {file_to_return}")
         
         if not file_to_return or not file_to_return.exists():

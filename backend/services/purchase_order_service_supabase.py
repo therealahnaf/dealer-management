@@ -67,8 +67,76 @@ VAT_PERCENT = Decimal("15.00")
 
 class PurchaseOrderServiceSB:
     @staticmethod
+    def _get_dealer_initials(dealer_id: str) -> str:
+        """
+        Get dealer initials from contact_person name.
+        Extracts capital first letter of each word.
+        Example: "John Doe" -> "JD", "Ahmed Bin Laden" -> "ABL"
+        """
+        try:
+            dealer_res = supabase.table("dealers").select("contact_person").eq("dealer_id", str(dealer_id)).execute()
+            if not dealer_res.data:
+                return "XX"  # Fallback if dealer not found
+            
+            contact_person = dealer_res.data[0].get("contact_person", "")
+            if not contact_person:
+                return "XX"  # Fallback if contact_person is empty
+            
+            # Extract initials: capital first letter of each word
+            words = contact_person.strip().split()
+            initials = "".join(word[0].upper() for word in words if word)
+            
+            return initials if initials else "XX"
+        except Exception:
+            return "XX"  # Fallback on any error
+
+    @staticmethod
+    def _get_unique_dealer_prefix(dealer_id: str) -> str:
+        """
+        Get unique dealer prefix handling collisions.
+        If multiple dealers have same initials, append a numeric suffix.
+        Example: "Ahnaf Hassan" and "Ahrar Hashmi" both have "AH" initials
+        - First dealer to create PO: "AH-001"
+        - Second dealer with same initials: "AH1-001" (collision suffix added)
+        """
+        initials = PurchaseOrderServiceSB._get_dealer_initials(dealer_id)
+        
+        try:
+            # Find all dealers with the same initials
+            all_dealers = supabase.table("dealers").select("dealer_id,contact_person").execute()
+            dealers_with_same_initials = []
+            
+            for dealer in (all_dealers.data or []):
+                dealer_initials = PurchaseOrderServiceSB._get_dealer_initials(dealer["dealer_id"])
+                if dealer_initials == initials:
+                    dealers_with_same_initials.append(dealer["dealer_id"])
+            
+            # If only one dealer has these initials, return as-is
+            if len(dealers_with_same_initials) == 1:
+                return initials
+            
+            # Multiple dealers with same initials - find this dealer's position
+            # Sort by dealer_id to ensure consistent ordering
+            dealers_with_same_initials.sort()
+            collision_index = dealers_with_same_initials.index(str(dealer_id))
+            
+            # Append numeric suffix (0, 1, 2, etc.)
+            # Only add suffix for dealers after the first one
+            if collision_index == 0:
+                return initials
+            else:
+                return f"{initials}{collision_index}"
+        except Exception:
+            return initials  # Fallback to initials without suffix on error
+
+    @staticmethod
     def _format_po_number(dealer_id: str, sequence_num: int) -> str:
-        return f"PO-{sequence_num:06d}"
+        """
+        Format PO number as PREFIX-### (e.g., AB-001, AH-001, AH1-001)
+        Handles collision by appending numeric suffix to initials if needed.
+        """
+        prefix = PurchaseOrderServiceSB._get_unique_dealer_prefix(dealer_id)
+        return f"{prefix}-{sequence_num:03d}"
 
     @staticmethod
     def create_purchase_order_as_admin(order_in, admin_user_id: str):
