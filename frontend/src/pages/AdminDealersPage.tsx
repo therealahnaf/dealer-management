@@ -5,6 +5,11 @@ import Layout from '../components/layout/Layout';
 import Alert from '../components/ui/Alert';
 import Loader from '../components/ui/Loader';
 import CreateDealerForm from '../components/admin/CreateDealerForm';
+import { Table, TableBody, TableCell, TableRow } from '../components/ui/table';
+import Button from '../components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion';
 
 interface Dealer {
   dealer_id: string;
@@ -51,13 +56,13 @@ const AdminDealersPage: React.FC = () => {
     try {
       setSubmitting(true);
       setError('');
-      
+
       const response = await dealerApi.post('/dealers/admin/create', formData);
-      
+
       setDealers(prev => [response.data, ...prev]);
       setSuccess('Dealer account created successfully!');
       setShowCreateForm(false);
-      
+
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to create dealer');
@@ -69,7 +74,7 @@ const AdminDealersPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           {loading ? (
             <Loader message="Loading Dealers..." />
@@ -79,114 +84,85 @@ const AdminDealersPage: React.FC = () => {
                 {error}
               </Alert>
             </div>
-          ) : showCreateForm ? (
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="text-brand-orange hover:text-brand-gray-orange font-semibold text-sm flex items-center gap-2"
-                >
-                  ← Back to Dealers
-                </button>
-              </div>
-              <CreateDealerForm
-                onSubmit={handleCreateDealer}
-                onCancel={() => setShowCreateForm(false)}
-                loading={submitting}
-              />
-            </div>
           ) : dealers.length > 0 ? (
-            <div className="max-w-6xl mx-auto">
-              {/* Minimal Header with Button */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-brand-orange" />
-                  <h1 className="text-2xl font-bold text-brand-brown">Dealers</h1>
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h2 className="text-lg font-medium text-gray-900">Dealers</h2>
+                  <Button
+                    onClick={() => setShowCreateForm(true)}
+                    className="bg-brand-orange hover:bg-brand-gray-orange text-white"
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Dealer
+                  </Button>
                 </div>
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="flex items-center gap-2 bg-brand-orange hover:bg-brand-gray-orange text-white px-4 py-2 rounded-lg transition-colors font-semibold text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create
-                </button>
-              </div>
-
-              {/* Dealers List */}
-              <div className="bg-white rounded-2xl shadow-lg border border-brand-orange/20 overflow-hidden">
-                <div className="bg-brand-light-orange px-6 py-4 border-b border-brand-orange/20">
-                  <div className="flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-brand-orange" />
-                    <h2 className="text-lg font-bold text-brand-brown">Dealer List</h2>
-                  </div>
-                </div>
-
-                <div className="divide-y divide-brand-orange/10">
+                <Accordion type="multiple" className="w-full">
                   {dealers.map((dealer) => (
-                    <div key={dealer.dealer_id} className="p-6 hover:bg-brand-light-orange/50 transition-colors duration-200">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-brand-brown">{dealer.company_name}</h3>
-                          <p className="text-sm text-brand-gray-orange/70 mt-1">Code: {dealer.customer_code}</p>
-                        </div>
-                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                          Active
-                        </div>
-                      </div>
-
-                      {/* User Information */}
-                      {dealer.user && (
-                        <div className="mb-4 pb-4 border-b border-gray-200">
-                          <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Account</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Mail className="w-4 h-4 text-gray-500" />
-                              <span>{dealer.user.email}</span>
+                    <AccordionItem key={dealer.dealer_id} value={dealer.dealer_id} className="border-gray-200">
+                      <AccordionTrigger className="hover:bg-gray-50 px-6 py-4">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-brand-black/10 flex items-center justify-center">
+                              <Building2 className="w-5 h-5 text-brand-black" />
                             </div>
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Users className="w-4 h-4 text-gray-500" />
-                              <span>{dealer.user.full_name}</span>
+                            <div className="text-left">
+                              <div className="font-medium text-gray-900">{dealer.company_name}</div>
+                              <div className="text-sm text-gray-500">{dealer.customer_code}</div>
                             </div>
-                            {dealer.user.contact_number && (
-                              <div className="flex items-center gap-2 text-gray-700">
-                                <Phone className="w-4 h-4 text-gray-500" />
-                                <span>{dealer.user.contact_number}</span>
-                              </div>
-                            )}
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Active
+                            </span>
                           </div>
                         </div>
-                      )}
-
-                      {/* Dealer Details */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                        {dealer.contact_person && (
-                          <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Contact Person</label>
-                            <p className="text-gray-900 mt-1">{dealer.contact_person}</p>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 bg-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm py-4">
+                          <div className="space-y-2">
+                            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Information</h4>
+                            <div className="space-y-3">
+                              {dealer.contact_person && (
+                                <div>
+                                  <p className="text-xs text-gray-500">Contact Person</p>
+                                  <p className="text-gray-900">{dealer.contact_person}</p>
+                                </div>
+                              )}
+                              {dealer.contact_number && (
+                                <div>
+                                  <p className="text-xs text-gray-500">Phone</p>
+                                  <p className="text-gray-900">{dealer.contact_number}</p>
+                                </div>
+                              )}
+                              {dealer.user?.contact_number && (
+                                <div>
+                                  <p className="text-xs text-gray-500">Account Phone</p>
+                                  <p className="text-gray-900">{dealer.user.contact_number}</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                        {dealer.contact_number && (
-                          <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Phone</label>
-                            <p className="text-gray-900 mt-1">{dealer.contact_number}</p>
-                          </div>
-                        )}
-                        {dealer.billing_address && (
-                          <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Billing</label>
-                            <p className="text-gray-900 mt-1 line-clamp-2">{dealer.billing_address}</p>
-                          </div>
-                        )}
-                        {dealer.shipping_address && (
-                          <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Shipping</label>
-                            <p className="text-gray-900 mt-1 line-clamp-2">{dealer.shipping_address}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                           
+                          {dealer.billing_address && (
+                            <div>
+                              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Billing Address</h4>
+                              <p className="text-gray-900 whitespace-pre-line">{dealer.billing_address}</p>
+                            </div>
+                          )}
+                           
+                          {dealer.shipping_address && dealer.shipping_address !== dealer.billing_address && (
+                            <div>
+                              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Shipping Address</h4>
+                              <p className="text-gray-900 whitespace-pre-line">{dealer.shipping_address}</p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                   ))}
-                </div>
+                </Accordion>
               </div>
             </div>
           ) : (
@@ -194,15 +170,34 @@ const AdminDealersPage: React.FC = () => {
               <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No dealers yet</h3>
               <p className="text-gray-600 mb-6">Create your first dealer account to get started</p>
-              <button
+              <Button
                 onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors duration-200"
+                className="bg-brand-orange hover:bg-brand-gray-orange text-white"
               >
-                <Plus className="w-5 h-5" />
-                Create First Dealer
-              </button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Dealer
+              </Button>
             </div>
           )}
+
+          {/* Create Dealer Dialog */}
+          <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+            <DialogContent className="sm:max-w-4xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold text-gray-900">Add New Dealer</DialogTitle>
+              </DialogHeader>
+              <div className="mt-6">
+                <CreateDealerForm
+                  onSubmit={async (data) => {
+                    await handleCreateDealer(data);
+                    setShowCreateForm(false);
+                  }}
+                  onCancel={() => setShowCreateForm(false)}
+                  loading={submitting}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </Layout>

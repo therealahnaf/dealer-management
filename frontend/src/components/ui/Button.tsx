@@ -17,7 +17,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95';
-  
+
   const variantClasses = {
     primary: 'bg-brand-orange hover:bg-brand-gray-orange text-white focus:ring-brand-orange shadow-lg hover:shadow-xl',
     secondary: 'bg-brand-light-orange hover:bg-brand-pastel-gray-orange text-brand-brown focus:ring-brand-orange shadow-md hover:shadow-lg',
@@ -25,7 +25,7 @@ const Button: React.FC<ButtonProps> = ({
     ghost: 'text-brand-orange hover:text-brand-orange-dark hover:bg-brand-light-orange focus:ring-brand-orange backdrop-blur-sm',
     destructive: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-lg hover:shadow-xl'
   };
-  
+
   const sizeClasses = {
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-3 text-sm',

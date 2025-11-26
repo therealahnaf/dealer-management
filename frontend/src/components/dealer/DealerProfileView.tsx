@@ -2,7 +2,7 @@ import React from 'react';
 import { DealerBase } from '../../types/api';
 import { Building2, User, Phone, MapPin, Edit } from 'lucide-react';
 import Button from '../ui/Button';
-import Card from '../ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 interface DealerProfileViewProps {
   dealer: DealerBase;
@@ -29,13 +29,13 @@ const DealerProfileView: React.FC<DealerProfileViewProps> = ({ dealer, onEdit })
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Company Information */}
             <Card>
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-brand-brown flex items-center">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-brand-brown flex items-center">
                   <Building2 className="h-5 w-5 mr-2 text-brand-orange" />
                   Company Information
-                </h3>
-              </div>
-              <div className="space-y-4">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">
                     Customer Code
@@ -52,18 +52,18 @@ const DealerProfileView: React.FC<DealerProfileViewProps> = ({ dealer, onEdit })
                     {dealer.company_name || 'Not specified'}
                   </p>
                 </div>
-              </div>
+              </CardContent>
             </Card>
 
             {/* Contact Information */}
             <Card>
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-brand-brown flex items-center">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-brand-brown flex items-center">
                   <User className="h-5 w-5 mr-2 text-brand-orange" />
                   Contact Information
-                </h3>
-              </div>
-              <div className="space-y-4">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">
                     Contact Person
@@ -83,39 +83,41 @@ const DealerProfileView: React.FC<DealerProfileViewProps> = ({ dealer, onEdit })
                     </p>
                   </div>
                 </div>
-              </div>
+              </CardContent>
             </Card>
 
             {/* Address Information */}
             <Card className="lg:col-span-2">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-brand-brown flex items-center">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-brand-brown flex items-center">
                   <MapPin className="h-5 w-5 mr-2 text-brand-orange" />
                   Address Information
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-2">
-                    Billing Address
-                  </label>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-700 whitespace-pre-line">
-                      {dealer.billing_address || 'Not specified'}
-                    </p>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Billing Address
+                    </label>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-gray-700 whitespace-pre-line">
+                        {dealer.billing_address || 'Not specified'}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Shipping Address
+                    </label>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-gray-700 whitespace-pre-line">
+                        {dealer.shipping_address || 'Not specified'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-2">
-                    Shipping Address
-                  </label>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-700 whitespace-pre-line">
-                      {dealer.shipping_address || 'Not specified'}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              </CardContent>
             </Card>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
-import Input from '../ui/Input';
+import Input from '../ui/input';
 import Alert from '../ui/Alert';
 
 const LoginForm: React.FC = () => {

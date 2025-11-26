@@ -3,9 +3,9 @@ import { DealerCreate, DealerUpdate, DealerBase } from '../../types/api';
 import { dealerApi } from '../../services/api';
 import { Building2, User, Phone, MapPin } from 'lucide-react';
 import Button from '../ui/Button';
-import Input from '../ui/Input';
+import Input from '../ui/input';
 import Alert from '../ui/Alert';
-import Card from '../ui/Card';
+import { Card, CardContent } from '../ui/card';
 
 interface DealerProfileFormProps {
   dealer?: DealerBase;
@@ -13,10 +13,10 @@ interface DealerProfileFormProps {
   mode: 'create' | 'edit';
 }
 
-const DealerProfileForm: React.FC<DealerProfileFormProps> = ({ 
-  dealer, 
-  onSuccess, 
-  mode 
+const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
+  dealer,
+  onSuccess,
+  mode
 }) => {
   const [formData, setFormData] = useState<DealerCreate>({
     customer_code: '',
@@ -64,7 +64,7 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         setSuccess('Dealer profile created successfully!');
       } else {
         // Don't include customer_code in update (it's immutable)
-        const updateData: DealerUpdate = { 
+        const updateData: DealerUpdate = {
           company_name: formData.company_name,
           contact_person: formData.contact_person,
           contact_number: formData.contact_number,
@@ -101,145 +101,146 @@ const DealerProfileForm: React.FC<DealerProfileFormProps> = ({
         </div>
 
         <Card>
+          <CardContent className="p-6">
+            {error && (
+              <Alert type="error" className="mb-6">
+                {error}
+              </Alert>
+            )}
 
-      {error && (
-        <Alert type="error" className="mb-6">
-          {error}
-        </Alert>
-      )}
+            {success && (
+              <Alert type="success" className="mb-6">
+                {success}
+              </Alert>
+            )}
 
-      {success && (
-        <Alert type="success" className="mb-6">
-          {success}
-        </Alert>
-      )}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Company Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                  <Building2 className="h-5 w-5 mr-2 text-gray-600" />
+                  Company Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    type="text"
+                    name="customer_code"
+                    label="Customer Code *"
+                    value={formData.customer_code}
+                    onChange={handleChange}
+                    disabled={mode === 'edit'}
+                    required
+                    placeholder="Enter customer code"
+                    helperText={mode === 'edit' ? 'Auto-assigned and cannot be changed' : 'Unique identifier for your business'}
+                  />
+                  <Input
+                    type="text"
+                    name="company_name"
+                    label="Company Name *"
+                    value={formData.company_name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter company name"
+                  />
+                </div>
+              </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Company Information */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <Building2 className="h-5 w-5 mr-2 text-gray-600" />
-            Company Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              type="text"
-              name="customer_code"
-              label="Customer Code *"
-              value={formData.customer_code}
-              onChange={handleChange}
-              disabled={mode === 'edit'}
-              required
-              placeholder="Enter customer code"
-              helperText={mode === 'edit' ? 'Auto-assigned and cannot be changed' : 'Unique identifier for your business'}
-            />
-            <Input
-              type="text"
-              name="company_name"
-              label="Company Name *"
-              value={formData.company_name}
-              onChange={handleChange}
-              required
-              placeholder="Enter company name"
-            />
-          </div>
-        </div>
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-gray-600" />
+                  Contact Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    type="text"
+                    name="contact_person"
+                    label="Contact Person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    placeholder="Enter contact person name"
+                  />
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
+                    <Input
+                      type="tel"
+                      name="contact_number"
+                      label="Contact Number"
+                      value={formData.contact_number}
+                      onChange={handleChange}
+                      className="pl-10"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                </div>
+              </div>
 
-        {/* Contact Information */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-gray-600" />
-            Contact Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              type="text"
-              name="contact_person"
-              label="Contact Person"
-              value={formData.contact_person}
-              onChange={handleChange}
-              placeholder="Enter contact person name"
-            />
-            <div className="relative">
-              <Phone className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
-              <Input
-                type="tel"
-                name="contact_number"
-                label="Contact Number"
-                value={formData.contact_number}
-                onChange={handleChange}
-                className="pl-10"
-                placeholder="Enter phone number"
-              />
-            </div>
-          </div>
-        </div>
+              {/* Address Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-gray-600" />
+                  Address Information
+                </h3>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Billing Address
+                    </label>
+                    <textarea
+                      name="billing_address"
+                      value={formData.billing_address}
+                      onChange={handleChange}
+                      rows={3}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
+                      placeholder="Enter billing address"
+                    />
+                  </div>
 
-        {/* Address Information */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-gray-600" />
-            Address Information
-          </h3>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Billing Address
-              </label>
-              <textarea
-                name="billing_address"
-                value={formData.billing_address}
-                onChange={handleChange}
-                rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
-                placeholder="Enter billing address"
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Shipping Address
-                </label>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Shipping Address
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={copyBillingToShipping}
+                        className="text-xs"
+                      >
+                        Copy from billing
+                      </Button>
+                    </div>
+                    <textarea
+                      name="shipping_address"
+                      value={formData.shipping_address}
+                      onChange={handleChange}
+                      rows={3}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
+                      placeholder="Enter shipping address"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={copyBillingToShipping}
-                  className="text-xs"
+                  onClick={() => window.history.back()}
                 >
-                  Copy from billing
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  loading={loading}
+                >
+                  {mode === 'create' ? 'Create Profile' : 'Save Changes'}
                 </Button>
               </div>
-              <textarea
-                name="shipping_address"
-                value={formData.shipping_address}
-                onChange={handleChange}
-                rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
-                placeholder="Enter shipping address"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.history.back()}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            loading={loading}
-          >
-            {mode === 'create' ? 'Create Profile' : 'Save Changes'}
-          </Button>
-        </div>
-      </form>
-    </Card>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

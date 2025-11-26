@@ -2,6 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Eye, Download, Building2, Calendar, Hash, DollarSign, ShoppingCart } from 'lucide-react';
 import { PurchaseOrder } from '../../types/purchaseOrder';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '../ui/table';
 
 interface OrdersTableProps {
   orders: PurchaseOrder[];
@@ -58,47 +66,47 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
+        <Table>
+          <TableHeader className="bg-gray-50 border-b border-gray-200">
+            <TableRow>
+              <TableHead className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <Hash className="w-4 h-4" />
                   Order #
                 </div>
-              </th>
+              </TableHead>
               
               {showDealerColumn && (
-                <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                <TableHead className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
                     Dealer
                   </div>
-                </th>
+                </TableHead>
               )}
               
-              <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
+              <TableHead className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Date
                 </div>
-              </th>
+              </TableHead>
               
               {showStatusColumn && (
-                <th className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+                <TableHead className="text-left py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Status</TableHead>
               )}
               
-              <th className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
+              <TableHead className="text-right py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Total</TableHead>
               
-              <th className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
+              <TableHead className="text-center py-4 px-6 text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
           
-          <tbody className="divide-y divide-gray-200">
+          <TableBody className="divide-y divide-gray-200">
             {orders.map((order) => (
-              <tr key={order.po_id} className="hover:bg-gray-50 transition-colors">
+              <TableRow key={order.po_id} className="hover:bg-gray-50 transition-colors">
                 {/* Order Number */}
-                <td className="py-4 px-6">
+                <TableCell className="py-4 px-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-gray-600" />
@@ -110,11 +118,11 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                       <p className="text-xs text-gray-500 mt-1">Order #{order.po_id}</p>
                     </div>
                   </div>
-                </td>
+                </TableCell>
                 
                 {/* Dealer Column (Admin only) */}
                 {showDealerColumn && (
-                  <td className="py-4 px-6">
+                  <TableCell className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Building2 className="w-4 h-4 text-gray-600" />
@@ -126,36 +134,36 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                         <p className="text-xs text-gray-500 mt-1">{order.dealer?.contact_person || 'N/A'}</p>
                       </div>
                     </div>
-                  </td>
+                  </TableCell>
                 )}
                 
                 {/* Date */}
-                <td className="py-4 px-6">
+                <TableCell className="py-4 px-6">
                   <span className="text-sm text-gray-900 font-medium">
                     {formatDate(order.po_date)}
                   </span>
-                </td>
+                </TableCell>
                 
                 {/* Status */}
                 {showStatusColumn && (
-                  <td className="py-4 px-6">
+                  <TableCell className="py-4 px-6">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(order.status)}`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
-                  </td>
+                  </TableCell>
                 )}
                 
                 {/* Total */}
-                <td className="py-4 px-6 text-right">
+                <TableCell className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-2">
                     <span className="text-m font-bold text-gray-600">
                       {order.total_inc_vat.toFixed(2)} ৳
                     </span>
                   </div>
-                </td>
+                </TableCell>
                 
                 {/* Actions */}
-                <td className="py-4 px-6 text-center">
+                <TableCell className="py-4 px-6 text-center">
                   <div className="flex items-center gap-2 justify-center">
                     {/* View Details Link */}
                     <Link
@@ -186,11 +194,11 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                       </button>
                     )}
                   </div>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
